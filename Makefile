@@ -1,6 +1,6 @@
 EXE  =		dropplet
 DEBUG =  	yes
-CXX =		c++
+CXX =		g++
 
 # dir
 SRC_DIR =       src
@@ -8,7 +8,8 @@ INC_DIR =       inc
 OBJ_DIR =       obj
 
 # sources
-PROJ_SRC_LIST = main.cpp 
+PROJ_SRC_LIST = main.cpp \
+				display.cpp
 
 # objects
 PROJ_OBJ_LIST = $(PROJ_SRC_LIST:.cpp=.o)
