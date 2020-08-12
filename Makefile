@@ -9,7 +9,8 @@ OBJ_DIR =       obj
 
 # sources
 PROJ_SRC_LIST = main.cpp \
-				display.cpp
+				display.cpp \
+				reader.cpp
 
 # objects
 PROJ_OBJ_LIST = $(PROJ_SRC_LIST:.cpp=.o)
