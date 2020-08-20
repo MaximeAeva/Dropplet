@@ -10,9 +10,8 @@ class Reader {
     public:
         Reader(std::string word);
         ~Reader();
-        std::vector<int> spliter(std::string word);
+        void spliter(std::string word);
         void search(bool lcase, int letter, int line, bool end);
-        void selector(std::vector<int> word);
 
 
     private:

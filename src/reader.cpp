@@ -8,26 +8,7 @@ Reader::Reader(std::string word)
         std::cout << "Problem" << std::endl;
         exit(1); 
     }
-    char x;
-    int n = 0;
-    while (this->inFile >> std::noskipws >> x)  
-    {
-        if(n==27) this->text + '\n';
-        if(x=='t')
-        {
-            n=0;
-            x='\n';
-        }
-        if(x=='s')
-        {
-            n++;
-            if((n%27)==1) x='\n';
-            else x=' ';
-        }
-            
-        if(((n%27)==1)||((n%27)==12))
-            this->text = this->text + x;
-    }
+    spliter(word);
     std::cout << this->text << std::endl;
 }
 
@@ -37,16 +18,16 @@ Reader::~Reader()
     this->text= "";
 }
 
-std::vector<int> Reader::spliter(std::string word)
+void Reader::spliter(std::string word)
 {
-    std::vector<int> w;
     bool end = false;
+
     for(int line = 0; line < 8; line++)
     {
         for(int i = 0; i<word.size(); i++) 
         {
             
-            if((i+1)==word.size()) bool end = true;
+            if(!((i+1)<word.size())) end = true;
             
             switch(word[i])
             {
@@ -206,10 +187,12 @@ std::vector<int> Reader::spliter(std::string word)
                 case 'z':
                     search(true, 26, line, end);
                 break;
+                default:
+                    std::cout << '  ';
+                break;
             }
         }
     }
-    return w;
 }
 
 void Reader::search(bool lcase, int letter, int line, bool end = false)
@@ -219,22 +202,18 @@ void Reader::search(bool lcase, int letter, int line, bool end = false)
     if(lcase) c = 'p';
     char x;
     int n = 0;
+    
     while (this->inFile >> std::noskipws >> x)  
     {
-        bool out = false;
-        if(n==27) 
-        {
-            if(l == line)out = true;
-            l++; 
-        }
         if(x==c)
         {
             n++;
             if(end) x='\n';
             else x=' ';
+            if(!(n%26)) l++;
         }
-            
-        if(((n%27)==letter)&&(l==line)) this->text = this->text + x;
+
+        if(((n%26)==(letter-1))&&(l==line)) this->text += x;
     }
 
 }
