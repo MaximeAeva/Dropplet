@@ -3,12 +3,15 @@
 
 #include <fstream>
 #include <string>
+#include <vector>
 #include <iostream>
 
 class Reader {
     public:
-        Reader();
+        Reader(std::string word);
         ~Reader();
+        std::vector<int> youMean(std::string word);
+
 
     private:
         std::ifstream inFile;

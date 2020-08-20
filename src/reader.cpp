@@ -1,6 +1,6 @@
 #include <reader.hpp>
 
-Reader::Reader()
+Reader::Reader(std::string word)
 {   
     this->inFile.open("./res/letters.txt");
     if (!this->inFile) 
@@ -9,22 +9,33 @@ Reader::Reader()
         exit(1); 
     }
     char x;
-    while (this->inFile >> x)  
+    int n = 0;
+    while (this->inFile >> std::noskipws >> x)  
     {
-        this->text = this->text + x;
+        if(x=='t')
+        {
+            n=0;
+            x='\n';
+        }
+        if(x=='p')
+        {
+            n++;
+            x='\n';
+        }
+            
+        if((n%27)==1)
+            this->text = this->text + x;
     }
     std::cout << this->text << std::endl;
-    this->text = "";
-    for(int i = 1; i < 3; i++)
-    {
-        std::getline(inFile, this->text);
-        std::cout << this->text << std::endl;
-    }
-    
 }
 
 Reader::~Reader()
 {
     this->inFile.close();
     this->text= "";
+}
+
+std::vector<int> youMean(syd::string word)
+{
+    
 }
