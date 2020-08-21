@@ -27,8 +27,9 @@ void Reader::spliter(std::string word)
         for(int i = 0; i<word.size(); i++) 
         {
             
-            if(!((i+1)<word.size())) end = true;
-            
+            if((i+1)==word.size()) end = true;
+            else end = false;
+
             switch(word[i])
             {
                 case 'A':
@@ -116,10 +117,10 @@ void Reader::spliter(std::string word)
                     search(true, 2, line, end);
                 break;
                 case 'c':
-                    search(true, 3, line, end);
+                    search(true, 4, line, end);
                 break;
                 case 'd':
-                    search(true, 4, line, end);
+                    search(true, 3, line, end);
                 break;
                 case 'e':
                     search(true, 5, line, end);
@@ -188,13 +189,21 @@ void Reader::spliter(std::string word)
                     search(true, 26, line, end);
                 break;
                 default:
-                    std::cout << '  ';
+                    this->text += '         ';
                 break;
             }
         }
     }
 }
 
+/**
+ * @brief Read a line from a letter
+ * 
+ * @param lcase capital or not
+ * @param letter letter number
+ * @param line line to read
+ * @param end last letter of the word ?
+ */
 void Reader::search(bool lcase, int letter, int line, bool end = false)
 {
     char c = 's';
@@ -202,18 +211,20 @@ void Reader::search(bool lcase, int letter, int line, bool end = false)
     if(lcase) c = 'p';
     char x;
     int n = 0;
-    
+    this->inFile.seekg(0);
     while (this->inFile >> std::noskipws >> x)  
     {
+        if(x=='e') break;
         if(x==c)
         {
             n++;
-            if(end) x='\n';
-            else x=' ';
-            if(!(n%26)) l++;
+            if(!(n%27)) l++;
+            x = 'N';
         }
-
-        if(((n%26)==(letter-1))&&(l==line)) this->text += x;
+        if(((n%27)==(letter))&&(l==line)) 
+        {
+            if(x!='N') this->text += x;
+        }
     }
-
+    if(end) this->text += '\n';
 }

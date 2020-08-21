@@ -4,8 +4,7 @@
 
 int main()
 {
-    std::cout << "TheQuickStart wish you the best !" << std::endl;
-    Reader r("Hello");
+    Reader r("You are welcome");
     r.~Reader();
     return 0;
 }
