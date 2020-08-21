@@ -4,9 +4,10 @@
 
 int main()
 {
-    Reader r("The Dropplet Project");
+    Reader r("Hello World");
     Display d(r.titleSize.height, r.titleSize.width, r.text);
-    std::cout << r.titleSize.width;
+    d.show();
     r.~Reader();
+    d.~Display();
     return 0;
 }

@@ -15,12 +15,18 @@ Display::~Display()
 void Display::show()
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    for(int raw = 0; raw < this->height; raw++)
+    std::cout << "+";
+    for(int col = 0; col < this->width; col++)
     {
-        for(int col = 0; col < this->width; col++)
-        {
-            
-        }
+        std::cout << "-";
     }
+    std::cout << "+" << std::endl;
+    std::cout << '\t' << this->title;
+    std::cout << "+";
+    for(int col = 0; col < this->width; col++)
+    {
+        std::cout << "-";
+    }
+    std::cout << "+" << std::endl;
     SetConsoleTextAttribute(hConsole, 15);
 }
