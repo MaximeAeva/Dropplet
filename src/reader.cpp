@@ -9,7 +9,6 @@ Reader::Reader(std::string word)
         exit(1); 
     }
     spliter(word);
-    std::cout << this->text << std::endl;
 }
 
 Reader::~Reader()
@@ -189,7 +188,8 @@ void Reader::spliter(std::string word)
                     search(true, 26, line, end);
                 break;
                 default:
-                    this->text += '         ';
+                    for(int i = 0; i<5; i++) this->text += ' ' ;
+                    if(line == 1) titleSize.width += 5;
                 break;
             }
         }
@@ -224,6 +224,7 @@ void Reader::search(bool lcase, int letter, int line, bool end = false)
         if(((n%27)==(letter))&&(l==line)) 
         {
             if(x!='N') this->text += x;
+            if(line == 1) titleSize.width++;
         }
     }
     if(end) this->text += '\n';
