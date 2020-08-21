@@ -3,7 +3,7 @@
 
 Description in coming
 
-![](./res/hello.png)
+![](res/hello.png)
 
 ## Installation
 Windows:
