@@ -3,7 +3,7 @@
 
 Description in coming
 
-![Example](https://github.com/MaximeAeva/Dropplet/tree/master/res/hello.png)
+![Hey!](https://github.com/MaximeAeva/Dropplet/blob/master/res/hello.PNG)
 
 ## Installation
 Windows:
