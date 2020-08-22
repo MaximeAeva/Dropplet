@@ -5,6 +5,8 @@ Display::Display(int height = 100, int width = 100, std::vector<std::string> tit
     this->height = height;
     this->width = width;
     this->title = title;
+    for(int i = 0; i < title.size(); i++) this->color.push(rand() % 14 + 1);
+    if (system("CLS")) system("clear");
 }
 
 Display::~Display()
@@ -14,6 +16,8 @@ Display::~Display()
 
 void Display::show()
 {
+    std::cout << "\033[2J";
+    gotoxy(0, 0);
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     std::cout << "+";
     for(int col = 0; col < this->width; col++)
@@ -24,7 +28,9 @@ void Display::show()
     
     for(int i = 0; i<this->title.size(); i++) 
     {
-        int k = rand() % 14 + 1; 
+        this->color.pop();
+        this->color.push(rand() % 14 + 1); 
+        int k = rand() % 14 + 1;
         std::cout << "|";
         SetConsoleTextAttribute(hConsole, k);
         std::cout << this->title[i];
@@ -39,4 +45,16 @@ void Display::show()
     }
     std::cout << "+" << std::endl;
     SetConsoleTextAttribute(hConsole, 15);
+    Sleep(500);
+}
+
+void Display::gotoxy( int column, int line )
+{
+COORD coord;
+coord.X = column;
+coord.Y = line;
+SetConsoleCursorPosition(
+GetStdHandle( STD_OUTPUT_HANDLE ),
+coord
+);
 }

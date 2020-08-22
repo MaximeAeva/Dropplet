@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <queue>
 #include <windows.h>
 #include <cstdlib>
 
@@ -17,7 +18,9 @@ class Display{
     private:
         int height;
         int width;
+        std::queue<int> color;
         std::vector<std::string> title;
+        void gotoxy( int column, int line );
 
 };
 

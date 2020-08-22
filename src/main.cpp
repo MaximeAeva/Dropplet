@@ -6,9 +6,9 @@
 int main()
 {
     srand(time(NULL));
-    Reader r("The Dropplet Project");
+    Reader r("Maxime le zonzon");
     Display d(r.titleSize.height, r.titleSize.width, r.text);
-    d.show();
+    while(1) d.show();
     r.~Reader();
     d.~Display();
     return 0;
