@@ -17,12 +17,12 @@ class Reader
     public:
         Reader(std::string word);
         ~Reader();
-        std::string text;
+        std::vector<std::string> text;
         coord titleSize;
 
     private:
         void spliter(std::string word);
-        void search(bool lcase, int letter, int line, bool end);
+        void search(bool lcase, int letter, int line);
         
         std::ifstream inFile;
         

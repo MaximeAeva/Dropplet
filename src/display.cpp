@@ -1,6 +1,6 @@
 #include <display.hpp>
 
-Display::Display(int height = 100, int width = 100, std::string title = "DROPPLET")
+Display::Display(int height = 100, int width = 100, std::vector<std::string> title = {})
 {
     this->height = height;
     this->width = width;
@@ -18,14 +18,24 @@ void Display::show()
     std::cout << "+";
     for(int col = 0; col < this->width; col++)
     {
-        std::cout << "-";
+        std::cout << "=";
     }
     std::cout << "+" << std::endl;
-    std::cout << '\t' << this->title;
+    
+    for(int i = 0; i<this->title.size(); i++) 
+    {
+        int k = rand() % 14 + 1; 
+        std::cout << "|";
+        SetConsoleTextAttribute(hConsole, k);
+        std::cout << this->title[i];
+        SetConsoleTextAttribute(hConsole, 15);
+        std::cout << "|" << std::endl;
+    }
+    
     std::cout << "+";
     for(int col = 0; col < this->width; col++)
     {
-        std::cout << "-";
+        std::cout << "=";
     }
     std::cout << "+" << std::endl;
     SetConsoleTextAttribute(hConsole, 15);
