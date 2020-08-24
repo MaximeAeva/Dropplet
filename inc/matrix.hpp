@@ -14,7 +14,7 @@ class Matrix{
     public:
     Matrix(int heigth, int width, Coord cd, int waterLvl = 20);
     ~Matrix();
-    std::vector<std::vector<bool>*> mat;
+    std::vector<std::vector<bool> > mat;
 
 };
 
