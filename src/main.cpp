@@ -8,11 +8,11 @@ int main()
 {
     srand(time(NULL));
     Coord drop;
-    Reader r("The Dropplet Project");
+    Reader r("Hello World");
     drop.col = int(r.titleSize.width/2);
     Matrix m(25, r.titleSize.width, drop);
     Display d(25, r.titleSize.width, r.text);
-    while(1) d.show(m);
+    while(1) d.show(m, 100);
     m.~Matrix();
     r.~Reader();
     d.~Display();
