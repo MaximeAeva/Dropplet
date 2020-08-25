@@ -47,7 +47,7 @@ void Display::show(Matrix m, int clingTime)
         std::cout << "|";
         for(int col = 0; col < this->width; col++)
             {
-                if(m.mat[raw][col]->drop) SetConsoleTextAttribute(hConsole, 30);
+                if(m.mat[raw][col].drop) SetConsoleTextAttribute(hConsole, 50);
                 std::cout << " ";
                 SetConsoleTextAttribute(hConsole, 15);
             }

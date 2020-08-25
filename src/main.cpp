@@ -6,13 +6,22 @@
 
 int main()
 {
+    int height = 25;
     srand(time(NULL));
     Coord drop;
-    Reader r("Hello World");
+    Reader r("You re in");
+    drop.raw = 5;
     drop.col = int(r.titleSize.width/2);
-    Matrix m(25, r.titleSize.width, drop);
-    Display d(25, r.titleSize.width, r.text);
-    while(1) d.show(m, 100);
+    Matrix m(height, r.titleSize.width, drop, height-0);
+    Display d(height, r.titleSize.width, r.text);
+    int i = 0;
+    while(i<30)
+    {
+        d.show(m, 100);
+        i++;
+        m.animate(0);
+    }
+
     m.~Matrix();
     r.~Reader();
     d.~Display();
