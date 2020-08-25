@@ -89,7 +89,7 @@ int Matter::move(std::vector<bool> b)
     if(val.empty())
     {
         std::vector<double> cp = this->give;
-        for(int i = 0; i<8; i++) this->give[i] = cp[(i+4)%8];
+        for(int i = 0; i<8; i++) this->give[i] = 0.2*cp[(i+4)%8];
     }
     //Fall
     else 
@@ -230,10 +230,16 @@ void Matrix::updateReceive()
                     }
                     //Boundary conditions
                     if((raw+sraw)<0) this->mat[raw][col].receive[i] += 0;
-                    else if((raw+sraw)>=this->height) this->mat[raw][col].receive[i] += this->mat[raw][col].receive[i-4];
+                    else if((raw+sraw)>=this->height) this->mat[raw][col].receive[i] += 0;
                     else if ((col+scol)<0) this->mat[raw][col].receive[i] += 0;
                     else if((col+scol)>=this->width) this->mat[raw][col].receive[i] += 0;
-                    else this->mat[raw][col].receive[i] += this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                    else 
+                    {   
+                        if(this->mat[raw+sraw][col+scol].drop)
+                            this->mat[raw][col].receive[i] += this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                        else this->mat[raw][col].receive[i] += 0;
+                            
+                    }
                 }
             }
         }
