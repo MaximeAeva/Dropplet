@@ -26,6 +26,10 @@ Matter::~Matter()
     this->give = {};
 }
 
+/**
+ * @brief Say matrix there's no matter here anymore
+ * 
+ */
 void Matter::bye()
 {
     this->receive = {};
@@ -33,6 +37,11 @@ void Matter::bye()
     this->drop = false;
 }
 
+/**
+ * @brief Welcome to the matter ! 
+ * 
+ * @param m 
+ */
 void Matter::hello(Matter m)
 {
     this->drop = m.drop;
@@ -100,6 +109,14 @@ int Matter::move(std::vector<bool> b)
     
 }
 
+/**
+ * @brief A Matrix of matter right here (Construct a new Matrix:: Matrix object)
+ * 
+ * @param height 
+ * @param width 
+ * @param cd 
+ * @param waterLvl 
+ */
 Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
 {
     this->height = height;
@@ -129,6 +146,10 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
     }
 }
 
+/**
+ * @brief Bye Matter (Destroy the Matrix:: Matrix object)
+ * 
+ */
 Matrix::~Matrix()
 {
     for(int i = 0; i<this->height; i++)
@@ -153,14 +174,17 @@ void Matrix::animate(int time)
     for(int i = 0; i<=time; i++)
     {
         updateReceive();//Update external forces
+
         updateGives();//Update internal forces
+
         updatePositions();//Update positions
+
         resetMoved();//Say each cell is movable
     }
 }
 
 /**
- * @brief Update receive matrix of each matter
+ * @brief Update external forces of each matter
  * 
  */
 void Matrix::updateReceive()
@@ -206,22 +230,20 @@ void Matrix::updateReceive()
                     }
                     //Boundary conditions
                     if((raw+sraw)<0) this->mat[raw][col].receive[i] += 0;
-                    else if((raw+sraw)>=this->height) this->mat[raw][col].receive[i] += 0;
+                    else if((raw+sraw)>=this->height) this->mat[raw][col].receive[i] += this->mat[raw][col].receive[i-4];
                     else if ((col+scol)<0) this->mat[raw][col].receive[i] += 0;
                     else if((col+scol)>=this->width) this->mat[raw][col].receive[i] += 0;
-                    else 
-                    {
-
-                        if(this->mat[raw+sraw][col+scol].drop)
-                            this->mat[raw][col].receive[i] += this->mat[raw+sraw][col+scol].give[(i+4)%8];
-                        else this->mat[raw][col].receive[i] += 0;
-                    }
+                    else this->mat[raw][col].receive[i] += this->mat[raw+sraw][col+scol].give[(i+4)%8];
                 }
             }
         }
     }
 }
 
+/**
+ * @brief Update internal forces of each matter
+ * 
+ */
 void Matrix::updateGives()
 {
     for(int raw = 0; raw<this->height; raw++)
@@ -234,9 +256,12 @@ void Matrix::updateGives()
     }
 }
 
+/**
+ * @brief Move each matter along it force vector
+ * 
+ */
 void Matrix::updatePositions()
 {
-    std::vector<bool> neighbours;
 
     for(int raw = 0; raw<this->height; raw++)
     {
@@ -245,6 +270,7 @@ void Matrix::updatePositions()
             //Look for neighbourhood
             if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
             {
+                std::vector<bool> neighbours;
                 int sraw, scol;
                 for(int i = 0; i<8; i++)
                 {
@@ -275,8 +301,11 @@ void Matrix::updatePositions()
                             sraw = 0;scol = -1;
                         break;
                     }
-                    if((raw+sraw)<0 || (raw+sraw)>=this->height) neighbours.push_back(true);
-                    else if ((col+scol)<0 || (col+scol)>=this->width) neighbours.push_back(true);
+                    //Boundary neighboors (nothing goes out)
+                    if((raw+sraw)<0) neighbours.push_back(true);
+                    else if((raw+sraw)>=this->height) neighbours.push_back(true);
+                    else if ((col+scol)<0) neighbours.push_back(true);
+                    else if((col+scol)>=this->width) neighbours.push_back(true);
                     else neighbours.push_back(this->mat[raw+sraw][col+scol].drop);
                 }
                 //Move if needed
@@ -315,7 +344,6 @@ void Matrix::updatePositions()
                         this->mat[raw][col].bye();
                     break;
                     default:
-                        this->mat[raw][col].moved = true;
                     break;
                 }
             }
@@ -323,6 +351,10 @@ void Matrix::updatePositions()
     }
 }
 
+/**
+ * @brief Just say everything goes ok
+ * 
+ */
 void Matrix::resetMoved()
 {
     for(int raw = 0; raw<this->height; raw++)
