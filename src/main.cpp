@@ -12,14 +12,14 @@ int main()
     Reader r("The Dropplet Project");
     drop.raw = 5;
     drop.col = int(r.titleSize.width/2);
-    Matrix m(height, r.titleSize.width, drop, height-5);
+    Matrix m(height, r.titleSize.width, drop, height-3);
     Display d(height, r.titleSize.width, r.text);
     int i = 0;
     while(i<100)
     {
-        d.show(m, 100);
+        d.show(m, 10);
         i++;
-        m.animate(50);
+        m.animate(0);
     }
 
     m.~Matrix();

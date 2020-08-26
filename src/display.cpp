@@ -16,6 +16,7 @@ Display::~Display()
 
 void Display::show(Matrix m, int clingTime)
 {
+    int border = 15;
     std::cout << "\033[2J";
     gotoxy(0, 0);
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -29,11 +30,13 @@ void Display::show(Matrix m, int clingTime)
     this->color.push_front(rand() % 14 + 1);
     for(int i = 0; i<this->title.size(); i++) 
     {
+        SetConsoleTextAttribute(hConsole, border);
         std::cout << "|";
         SetConsoleTextAttribute(hConsole, color[i]);
         std::cout << this->title[i];
-        SetConsoleTextAttribute(hConsole, 15);
+        SetConsoleTextAttribute(hConsole, border);
         std::cout << "|" << std::endl;
+        SetConsoleTextAttribute(hConsole, 15);
     }
     
     std::cout << "+";
@@ -44,14 +47,25 @@ void Display::show(Matrix m, int clingTime)
     std::cout << "+" << std::endl;
     for(int raw = 0; raw < this->height; raw++)
     {
+        SetConsoleTextAttribute(hConsole, border);
         std::cout << "|";
+        SetConsoleTextAttribute(hConsole, 15);
         for(int col = 0; col < this->width; col++)
+        {
+            if(m.mat[raw][col].drop) 
             {
-                if(m.mat[raw][col].drop) SetConsoleTextAttribute(hConsole, 50);
-                std::cout << " ";
+                SetConsoleTextAttribute(hConsole, 11);
+                std::cout << "O";
                 SetConsoleTextAttribute(hConsole, 15);
             }
+            else
+            {
+                std::cout << " ";
+            }  
+        }
+        SetConsoleTextAttribute(hConsole, border);
         std::cout << "|" << std::endl;
+        SetConsoleTextAttribute(hConsole, 15);
     }
     std::cout << "+";
     for(int col = 0; col < this->width; col++)

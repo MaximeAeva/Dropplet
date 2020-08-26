@@ -8,10 +8,11 @@
  */
 Matter::Matter(bool d)
 {
-    std::vector<double> receive(8, 0);
+    std::vector<float> receive(8, 0);
     this->give = receive;
     this->moved = false;
-    if(d) receive[1] += 0.00005*9.8;//If water, it should weight a bit
+    this->acceleration = {0, 0};
+    this->speed = {0, 0};
     this->drop = d;
     this->receive = receive;
 }
@@ -35,6 +36,8 @@ void Matter::bye()
     this->receive = {};
     this->give = {};
     this->drop = false;
+    this->acceleration = {0, 0};
+    this->speed = {0, 0};
 }
 
 /**
@@ -48,22 +51,28 @@ void Matter::hello(Matter m)
     this->give = m.give;
     this->receive = m.receive;
     this->moved = true;
+    this->speed = m.speed;
+    this->acceleration = m.acceleration;
 }
 
 /**
  * @brief Give the traction forces
  *  
  */
-void Matter::resultant()
+void Matter::pfd()
 {
-    double epsilon = 1e-10;
+    float epsilon = 1e-5;
     //only 4 direction
-    for(int i = 0; i<4; i++)
+    for(int i = 0; i<8; i++)
     {
-        double k = (this->receive[i])-(this->receive[i+4]);
-        if(k<epsilon) k = 0;
-        if(k>=0) this->give[i+4] = k;
-        else this->give[i] = -1*k;
+        if(abs(this->receive[i])<epsilon) this->receive[i] = 0;
+        if(this->receive[i]>0) this->give[i] -= this->receive[i];
+        else this->give[(i+4)%8] += this->receive[i];
+    }
+    for(int i = 0; i<8; i++) if(this->give[i]<0)
+    {
+        this->give[(i+4)%8] += this->give[i];
+        this->give[i] = 0;
     }
 }
 
@@ -76,7 +85,7 @@ void Matter::resultant()
 int Matter::move(std::vector<bool> b)
 {
     std::vector<int> pos;
-    std::vector<double> val;
+    std::vector<float> val;
     for(int i = 0; i<8; i++)
     {
         if((!b[i]) && this->give[i]>0)
@@ -85,17 +94,31 @@ int Matter::move(std::vector<bool> b)
             val.push_back(this->give[i]);
         }
     }
-    //Jump
+    //Distribute
     if(val.empty())
     {
-        std::vector<double> cp = this->give;
-        for(int i = 0; i<8; i++) this->give[i] = 0.2*cp[(i+4)%8];
+        int pos = 0;
+        int val = 0;
+        for(int i = 0; i<8; i++)
+        {
+            if(this->give[i] > val)
+            {
+                pos = i;
+                val = this->give[i];
+            }
+        } 
+        if(val>0)
+        {
+            for(int i = pos-2; i<pos+3; i++) this->give[(i+pos)%8] += (3-abs(pos))*this->give[pos]/8;//(7x/8)Small loss
+            this->give[pos] /= 2;
+        }
+        return -1;
     }
-    //Fall
+    //Move
     else 
     {
         int k = 0;
-        double l = 0;
+        float l = 0;
         for(int i = 0; i<val.size(); i++)
         {
             if(val[i]>l)
@@ -193,8 +216,9 @@ void Matrix::updateReceive()
     {
         for(int col = 0; col<this->width; col++)
         {
-            if(this->mat[raw][col].drop)
+            if(this->mat[raw][col].drop)//If a drop, look forces around
             {
+                this->mat[raw][col].acceleration = {0, 0};//Evaluate at each step
                 int sraw, scol;
                 for(int i = 0; i<8; i++)
                 {
@@ -202,45 +226,65 @@ void Matrix::updateReceive()
                     {
                         case 0:
                             sraw = -1;scol = -1;
-                            this->mat[raw][col].receive[i] += 0.25*0.00005*9.8;
+                            this->mat[raw][col].receive[i] = 0;
                         break;
                         case 1:
                             sraw = -1;scol = 0;
-                            this->mat[raw][col].receive[i] += 0.5*0.00005*9.8;
+                            this->mat[raw][col].receive[i] = 0;
                         break;
                         case 2:
                             sraw = -1;scol = 1;
-                            this->mat[raw][col].receive[i] += 0.25*0.00005*9.8;
+                            this->mat[raw][col].receive[i] = 0;
                         break;
                         case 3:
                             sraw = 0;scol = 1;
+                            this->mat[raw][col].receive[i] = 0;
                         break;
                         case 4:
                             sraw = 1;scol = 1;
+                            this->mat[raw][col].receive[i] = 0;
                         break;
                         case 5:
                             sraw = 1;scol = 0;
+                            this->mat[raw][col].receive[i] = 0;
                         break;
                         case 6:
                             sraw = 1;scol = -1;
+                            this->mat[raw][col].receive[i] = 0;
                         break;
                         case 7:
                             sraw = 0;scol = -1;
+                            this->mat[raw][col].receive[i] = 0;
                         break;
                     }
                     //Boundary conditions
-                    if((raw+sraw)<0) this->mat[raw][col].receive[i] += 0;
-                    else if((raw+sraw)>=this->height) this->mat[raw][col].receive[i] += 0;
-                    else if ((col+scol)<0) this->mat[raw][col].receive[i] += 0;
-                    else if((col+scol)>=this->width) this->mat[raw][col].receive[i] += 0;
+                    if((raw+sraw)<0) this->mat[raw][col].receive[i] = 0;
+                    else if((raw+sraw)>=this->height) this->mat[raw][col].receive[i] -= 0;
+                    else if ((col+scol)<0) this->mat[raw][col].receive[i] -= 0;
+                    else if((col+scol)>=this->width) this->mat[raw][col].receive[i] -= 0;
                     else 
                     {   
-                        if(this->mat[raw+sraw][col+scol].drop)
+                        if(i>3 && i!=7) this->mat[raw][col].receive[(i+4)%8] += 2-abs(i-5);
+                        if(i>3 && i!=7) this->mat[raw][col].acceleration.y += 1;//weight along y
+                        
+                        if(this->mat[raw+sraw][col+scol].drop)//Give its force
+                        {
+                            //Project on the right vector
+                            float angl = atan2(scol, sraw) - atan2(this->mat[raw+sraw][col+scol].acceleration.y, 
+                                                                            this->mat[raw+sraw][col+scol].acceleration.x);
+                            if((abs(angl))<3.1415)//If force is directed to this cell, transmit
+                            {
+                                this->mat[raw][col].acceleration.x += this->mat[raw+sraw][col+scol].acceleration.x;
+                                this->mat[raw][col].acceleration.y += this->mat[raw+sraw][col+scol].acceleration.y;
+                                this->mat[raw+sraw][col+scol].acceleration = {0, 0};
+                            }
                             this->mat[raw][col].receive[i] += this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                            this->mat[raw+sraw][col+scol].give[(i+4)%8] = 0;
+                        }
                         else this->mat[raw][col].receive[i] += 0;
-                            
                     }
                 }
+                //Should check if this force can be used or must be distributed
             }
         }
     }
@@ -257,7 +301,7 @@ void Matrix::updateGives()
         for(int col = 0; col<this->width; col++)
         {
             if(this->mat[raw][col].drop) 
-                this->mat[raw][col].resultant();
+                this->mat[raw][col].pfd();
         }
     }
 }

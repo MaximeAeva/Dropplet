@@ -4,11 +4,17 @@
 #include <vector>
 #include <cstddef>
 #include <cstdlib>
+#include <cmath>
 #include <iostream>
 
 struct Coord{
     int raw;
     int col;
+};
+
+struct F{
+    float x;
+    float y;
 };
 
 /**
@@ -20,18 +26,18 @@ class Matter{
         Matter(bool d);
         ~Matter();
         bool drop = false;//is it a water drop?
-        bool moved = false;
-        double getReceive(int i){this->receive[i];};
-        void addReceive(int i, double v){this->receive[i] += v;};
-        void resultant();
-        int move(std::vector<bool> b);
+        bool moved = false;//Has it moved ?
+        void pfd();//Dynamic fundamental principe
+        int move(std::vector<bool> b);//Where to go ?
         void bye();
         void hello(Matter);
-        std::vector<double> receive;//eight neighbours
-        std::vector<double> give;//give others drop its forces
-
-    private:
-        
+        void vertLimit(){this->speed.x *= -1;}
+        void horzLimit(){this->speed.y *= -1;}
+        std::vector<float> receive;//eight neighbours
+        std::vector<float> give;//give others drop its forces
+        float mass = 5*10e-5;//kg
+        F speed;
+        F acceleration;
 };
 
 /**
@@ -53,8 +59,6 @@ class Matrix{
         void resetMoved();
         int height;
         int width;
-
-
 };
 
 #endif
