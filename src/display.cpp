@@ -54,7 +54,31 @@ void Display::show(Matrix m, int clingTime)
         {
             if(m.mat[raw][col].drop) 
             {
-                SetConsoleTextAttribute(hConsole, 11);
+                int s = int(m.mat[raw][col].strenght());
+                switch(s/2)
+                {
+                    case 0:
+                        SetConsoleTextAttribute(hConsole, 9);
+                    break;
+                    case 1:
+                        SetConsoleTextAttribute(hConsole, 11);
+                    break;
+                    case 2:
+                        SetConsoleTextAttribute(hConsole, 10);
+                    break;
+                    case 3:
+                        SetConsoleTextAttribute(hConsole, 14);
+                    break;
+                    case 4:
+                        SetConsoleTextAttribute(hConsole, 13);
+                    break;
+                    case 5:
+                        SetConsoleTextAttribute(hConsole, 12);
+                    break;
+                    default:
+                        SetConsoleTextAttribute(hConsole, 15);
+                    break;
+                }
                 std::cout << "O";
                 SetConsoleTextAttribute(hConsole, 15);
             }

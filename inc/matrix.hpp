@@ -12,11 +12,6 @@ struct Coord{
     int col;
 };
 
-struct F{
-    float x;
-    float y;
-};
-
 /**
  * @brief A way to give matter its own behaviour
  * 
@@ -29,15 +24,13 @@ class Matter{
         bool moved = false;//Has it moved ?
         void pfd();//Dynamic fundamental principe
         int move(std::vector<bool> b);//Where to go ?
+        void reverseGive(bool vert, float coeff = 0.8);
         void bye();
+        float strenght();
         void hello(Matter);
-        void vertLimit(){this->speed.x *= -1;}
-        void horzLimit(){this->speed.y *= -1;}
+        int weight;
         std::vector<float> receive;//eight neighbours
         std::vector<float> give;//give others drop its forces
-        float mass = 5*10e-5;//kg
-        F speed;
-        F acceleration;
 };
 
 /**
@@ -56,6 +49,7 @@ class Matrix{
         void updateReceive();
         void updatePositions();
         void updateGives();
+        std::vector<Matter*> prioritize();
         void resetMoved();
         int height;
         int width;

@@ -11,9 +11,8 @@ Matter::Matter(bool d)
     std::vector<float> receive(8, 0);
     this->give = receive;
     this->moved = false;
-    this->acceleration = {0, 0};
-    this->speed = {0, 0};
     this->drop = d;
+    if(d) this->weight = 1;
     this->receive = receive;
 }
 
@@ -36,8 +35,6 @@ void Matter::bye()
     this->receive = {};
     this->give = {};
     this->drop = false;
-    this->acceleration = {0, 0};
-    this->speed = {0, 0};
 }
 
 /**
@@ -51,8 +48,6 @@ void Matter::hello(Matter m)
     this->give = m.give;
     this->receive = m.receive;
     this->moved = true;
-    this->speed = m.speed;
-    this->acceleration = m.acceleration;
 }
 
 /**
@@ -61,19 +56,23 @@ void Matter::hello(Matter m)
  */
 void Matter::pfd()
 {
-    float epsilon = 1e-5;
-    //only 4 direction
-    for(int i = 0; i<8; i++)
+    //Add each received force but care not to only add (result in infinite movement)
+    float epsilon = 0.05;
+    float a;
+    for(int i = 0; i<4; i++)
     {
-        if(abs(this->receive[i])<epsilon) this->receive[i] = 0;
-        if(this->receive[i]>0) this->give[i] -= this->receive[i];
-        else this->give[(i+4)%8] += this->receive[i];
+        a = this->receive[i]-this->receive[(i+4)%8];
+        if(abs(a)<epsilon) this->receive[i] = 0;
+        if(a>0) this->give[i] -= a;
+        else this->give[(i+4)%8] += a;
     }
     for(int i = 0; i<8; i++) if(this->give[i]<0)
     {
-        this->give[(i+4)%8] += this->give[i];
+        this->give[(i+4)%8] -= this->give[i];
         this->give[i] = 0;
     }
+    //Cushion (avoid infinite sliding)
+    for(int i = 3; i<8; i+=4) this->give[i] *= 0.95;
 }
 
 /**
@@ -109,8 +108,9 @@ int Matter::move(std::vector<bool> b)
         } 
         if(val>0)
         {
-            for(int i = pos-2; i<pos+3; i++) this->give[(i+pos)%8] += (3-abs(pos))*this->give[pos]/8;//(7x/8)Small loss
-            this->give[pos] /= 2;
+            float k = this->give[pos];
+            for(int i = -1; i<2; i++) this->give[(pos+i)%8] += (2-abs(i))*k/4;
+            this->give[pos] -= k;
         }
         return -1;
     }
@@ -133,6 +133,43 @@ int Matter::move(std::vector<bool> b)
 }
 
 /**
+ * @brief Rebound (vertical or hori) with a loss coefficient
+ * 
+ * @param vert 
+ * @param c 
+ */
+void Matter::reverseGive(bool vert, float c)
+{
+    float t;
+    if(vert)
+    {
+        t = c*this->give[6]; this->give[6] = c*this->give[0];this->give[0] = t;
+        t = c*this->give[5]; this->give[5] = c*this->give[1];this->give[1] = t;
+        t = c*this->give[4]; this->give[4] = c*this->give[2];this->give[2] = t;
+    }
+    else
+    {
+        t = c*this->give[0]; this->give[0] = c*this->give[2];this->give[2] = t;
+        t = c*this->give[7]; this->give[7] = c*this->give[3];this->give[3] = t;
+        t = c*this->give[6]; this->give[6] = c*this->give[4];this->give[4] = t;
+    }
+    
+}
+
+/**
+ * @brief Give Matter movement strenght
+ * 
+ * @return float 
+ */
+float Matter::strenght()
+{
+    float m = 0;
+    for(int i = 0; i<8; i++) m += this->give[i];
+    return m;
+}
+
+
+/**
  * @brief A Matrix of matter right here (Construct a new Matrix:: Matrix object)
  * 
  * @param height 
@@ -152,6 +189,7 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
             if((raw==cd.raw)&&(col==cd.col)) 
             {
                 Matter p(true);
+                //p.weight = 20;//Drop weight
                 v.push_back(p);
             }
             else if(raw >= waterLvl) 
@@ -186,7 +224,6 @@ Matrix::~Matrix()
     this->mat = {};
 }
 
-
 /**
  * @brief Compute the next step
  * 
@@ -212,13 +249,15 @@ void Matrix::animate(int time)
  */
 void Matrix::updateReceive()
 {
+    float fluidTension = 0.4;//Followed forces
+    float wallLoss = 0.5;//When against a border
+    float transmission = 0.8;//Give each others
     for(int raw = 0; raw<this->height; raw++)
     {
         for(int col = 0; col<this->width; col++)
         {
             if(this->mat[raw][col].drop)//If a drop, look forces around
             {
-                this->mat[raw][col].acceleration = {0, 0};//Evaluate at each step
                 int sraw, scol;
                 for(int i = 0; i<8; i++)
                 {
@@ -257,34 +296,31 @@ void Matrix::updateReceive()
                             this->mat[raw][col].receive[i] = 0;
                         break;
                     }
-                    //Boundary conditions
-                    if((raw+sraw)<0) this->mat[raw][col].receive[i] = 0;
-                    else if((raw+sraw)>=this->height) this->mat[raw][col].receive[i] -= 0;
-                    else if ((col+scol)<0) this->mat[raw][col].receive[i] -= 0;
-                    else if((col+scol)>=this->width) this->mat[raw][col].receive[i] -= 0;
+                    //Boundary conditions (rebound with a coefficient)
+                    if((raw+sraw)<0) this->mat[raw][col].reverseGive(true, 1-wallLoss);
+                    else if((raw+sraw)>=this->height) this->mat[raw][col].reverseGive(true, 1-wallLoss);
+                    else if ((col+scol)<0) this->mat[raw][col].reverseGive(false, 1-wallLoss);
+                    else if((col+scol)>=this->width) this->mat[raw][col].reverseGive(false, 1-wallLoss);
                     else 
                     {   
-                        if(i>3 && i!=7) this->mat[raw][col].receive[(i+4)%8] += 2-abs(i-5);
-                        if(i>3 && i!=7) this->mat[raw][col].acceleration.y += 1;//weight along y
-                        
-                        if(this->mat[raw+sraw][col+scol].drop)//Give its force
+                        //Gravity
+                        if(i>2) this->mat[raw][col].receive[(i+4)%8] += this->mat[raw][col].weight*(3-abs(i-5))/3;
+                        if(this->mat[raw+sraw][col+scol].drop)//Interaction force
                         {
-                            //Project on the right vector
-                            float angl = atan2(scol, sraw) - atan2(this->mat[raw+sraw][col+scol].acceleration.y, 
-                                                                            this->mat[raw+sraw][col+scol].acceleration.x);
-                            if((abs(angl))<3.1415)//If force is directed to this cell, transmit
-                            {
-                                this->mat[raw][col].acceleration.x += this->mat[raw+sraw][col+scol].acceleration.x;
-                                this->mat[raw][col].acceleration.y += this->mat[raw+sraw][col+scol].acceleration.y;
-                                this->mat[raw+sraw][col+scol].acceleration = {0, 0};
-                            }
-                            this->mat[raw][col].receive[i] += this->mat[raw+sraw][col+scol].give[(i+4)%8];
-                            this->mat[raw+sraw][col+scol].give[(i+4)%8] = 0;
+                            //Counter reaction
+                            if(i>2) this->mat[raw][col].receive[i] += this->mat[raw][col].weight*(3-abs(i-5))/3;
+                            //give with loss
+                            this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                            //Reflection
+                            this->mat[raw+sraw][col+scol].give[i] += (1-transmission)*this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                            this->mat[raw+sraw][col+scol].give[(i+4)%8] *= 1-transmission;
+                            //Internal fluid tension
+                            this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
+                            this->mat[raw+sraw][col+scol].give[i] *= 1-fluidTension;
                         }
                         else this->mat[raw][col].receive[i] += 0;
                     }
                 }
-                //Should check if this force can be used or must be distributed
             }
         }
     }
@@ -300,8 +336,7 @@ void Matrix::updateGives()
     {
         for(int col = 0; col<this->width; col++)
         {
-            if(this->mat[raw][col].drop) 
-                this->mat[raw][col].pfd();
+            if(this->mat[raw][col].drop) this->mat[raw][col].pfd();
         }
     }
 }
