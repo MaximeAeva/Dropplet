@@ -71,8 +71,6 @@ void Matter::pfd()
         this->give[(i+4)%8] -= this->give[i];
         this->give[i] = 0;
     }
-    //Cushion (avoid infinite sliding)
-    for(int i = 3; i<8; i+=4) this->give[i] *= 0.95;
 }
 
 /**
@@ -189,7 +187,7 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
             if((raw==cd.raw)&&(col==cd.col)) 
             {
                 Matter p(true);
-                //p.weight = 20;//Drop weight
+                //p.weight = 2;//Drop weight
                 v.push_back(p);
             }
             else if(raw >= waterLvl) 
@@ -229,15 +227,15 @@ Matrix::~Matrix()
  * 
  * @param time Speed at wich you want to travel
  */
-void Matrix::animate(int time)
+void Matrix::animate(int time, bool t)
 {
     for(int i = 0; i<=time; i++)
     {
-        updateReceive();//Update external forces
+        updateReceive(t);//Update external forces
 
         updateGives();//Update internal forces
 
-        updatePositions();//Update positions
+        updatePositions(t);//Update positions
 
         resetMoved();//Say each cell is movable
     }
@@ -247,78 +245,153 @@ void Matrix::animate(int time)
  * @brief Update external forces of each matter
  * 
  */
-void Matrix::updateReceive()
+void Matrix::updateReceive(bool sens)
 {
-    float fluidTension = 0.4;//Followed forces
-    float wallLoss = 0.5;//When against a border
-    float transmission = 0.8;//Give each others
+    float fluidTension = 0.8;//Followed forces
+    float wallLoss = 0;//When against a border
+    float transmission = 0.9;//Give each others
     for(int raw = 0; raw<this->height; raw++)
     {
-        for(int col = 0; col<this->width; col++)
+        if(sens)
         {
-            if(this->mat[raw][col].drop)//If a drop, look forces around
+            for(int col = 0; col<this->width; col++)
             {
-                int sraw, scol;
-                for(int i = 0; i<8; i++)
+                if(this->mat[raw][col].drop)//If a drop, look forces around
                 {
-                    switch(i)
+                    int sraw, scol;
+                    for(int i = 0; i<8; i++)
                     {
-                        case 0:
-                            sraw = -1;scol = -1;
-                            this->mat[raw][col].receive[i] = 0;
-                        break;
-                        case 1:
-                            sraw = -1;scol = 0;
-                            this->mat[raw][col].receive[i] = 0;
-                        break;
-                        case 2:
-                            sraw = -1;scol = 1;
-                            this->mat[raw][col].receive[i] = 0;
-                        break;
-                        case 3:
-                            sraw = 0;scol = 1;
-                            this->mat[raw][col].receive[i] = 0;
-                        break;
-                        case 4:
-                            sraw = 1;scol = 1;
-                            this->mat[raw][col].receive[i] = 0;
-                        break;
-                        case 5:
-                            sraw = 1;scol = 0;
-                            this->mat[raw][col].receive[i] = 0;
-                        break;
-                        case 6:
-                            sraw = 1;scol = -1;
-                            this->mat[raw][col].receive[i] = 0;
-                        break;
-                        case 7:
-                            sraw = 0;scol = -1;
-                            this->mat[raw][col].receive[i] = 0;
-                        break;
-                    }
-                    //Boundary conditions (rebound with a coefficient)
-                    if((raw+sraw)<0) this->mat[raw][col].reverseGive(true, 1-wallLoss);
-                    else if((raw+sraw)>=this->height) this->mat[raw][col].reverseGive(true, 1-wallLoss);
-                    else if ((col+scol)<0) this->mat[raw][col].reverseGive(false, 1-wallLoss);
-                    else if((col+scol)>=this->width) this->mat[raw][col].reverseGive(false, 1-wallLoss);
-                    else 
-                    {   
-                        //Gravity
-                        if(i>2) this->mat[raw][col].receive[(i+4)%8] += this->mat[raw][col].weight*(3-abs(i-5))/3;
-                        if(this->mat[raw+sraw][col+scol].drop)//Interaction force
+                        switch(i)
                         {
-                            //Counter reaction
-                            if(i>2) this->mat[raw][col].receive[i] += this->mat[raw][col].weight*(3-abs(i-5))/3;
-                            //give with loss
-                            this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
-                            //Reflection
-                            this->mat[raw+sraw][col+scol].give[i] += (1-transmission)*this->mat[raw+sraw][col+scol].give[(i+4)%8];
-                            this->mat[raw+sraw][col+scol].give[(i+4)%8] *= 1-transmission;
-                            //Internal fluid tension
-                            this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
-                            this->mat[raw+sraw][col+scol].give[i] *= 1-fluidTension;
+                            case 0:
+                                sraw = -1;scol = -1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 1:
+                                sraw = -1;scol = 0;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 2:
+                                sraw = -1;scol = 1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 3:
+                                sraw = 0;scol = 1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 4:
+                                sraw = 1;scol = 1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 5:
+                                sraw = 1;scol = 0;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 6:
+                                sraw = 1;scol = -1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 7:
+                                sraw = 0;scol = -1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
                         }
-                        else this->mat[raw][col].receive[i] += 0;
+                        //Boundary conditions (rebound with a coefficient)
+                        if((raw+sraw)<0) this->mat[raw][col].reverseGive(true, 1-wallLoss);
+                        else if((raw+sraw)>=this->height) this->mat[raw][col].reverseGive(true, 1-wallLoss);
+                        else if ((col+scol)<0) this->mat[raw][col].reverseGive(false, 1-wallLoss);
+                        else if((col+scol)>=this->width) this->mat[raw][col].reverseGive(false, 1-wallLoss);
+                        else 
+                        {   
+                            //Gravity
+                            if(i>2) this->mat[raw][col].receive[(i+4)%8] += this->mat[raw][col].weight*(3-abs(i-5))/3;
+                            if(this->mat[raw+sraw][col+scol].drop)//Interaction force
+                            {
+                                //Counter reaction
+                                if(i>2) this->mat[raw][col].receive[i] += this->mat[raw][col].weight*(3-abs(i-5))/3;
+                                //give with loss
+                                this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                                //Reflection
+                                this->mat[raw+sraw][col+scol].give[i] += (1-transmission)*this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                                this->mat[raw+sraw][col+scol].give[(i+4)%8] *= 1-transmission;
+                                //Internal fluid tension
+                                this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
+                                this->mat[raw+sraw][col+scol].give[i] *= 1-fluidTension;
+                            }
+                            else this->mat[raw][col].receive[i] += 0;
+                        }
+                    }
+                }
+            }      
+        }
+        else
+        {
+            for(int col = this->width; col>=0; col--)
+            {
+                if(this->mat[raw][col].drop)//If a drop, look forces around
+                {
+                    int sraw, scol;
+                    for(int i = 0; i<8; i++)
+                    {
+                        switch(i)
+                        {
+                            case 0:
+                                sraw = -1;scol = -1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 1:
+                                sraw = -1;scol = 0;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 2:
+                                sraw = -1;scol = 1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 3:
+                                sraw = 0;scol = 1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 4:
+                                sraw = 1;scol = 1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 5:
+                                sraw = 1;scol = 0;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 6:
+                                sraw = 1;scol = -1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                            case 7:
+                                sraw = 0;scol = -1;
+                                this->mat[raw][col].receive[i] = 0;
+                            break;
+                        }
+                        //Boundary conditions (rebound with a coefficient)
+                        if((raw+sraw)<0) this->mat[raw][col].reverseGive(true, 1-wallLoss);
+                        else if((raw+sraw)>=this->height) this->mat[raw][col].reverseGive(true, 1-wallLoss);
+                        else if ((col+scol)<0) this->mat[raw][col].reverseGive(false, 1-wallLoss);
+                        else if((col+scol)>=this->width) this->mat[raw][col].reverseGive(false, 1-wallLoss);
+                        else 
+                        {   
+                            //Gravity
+                            if(i>2) this->mat[raw][col].receive[(i+4)%8] += this->mat[raw][col].weight*(3-abs(i-5))/3;
+                            if(this->mat[raw+sraw][col+scol].drop)//Interaction force
+                            {
+                                //Counter reaction
+                                if(i>2) this->mat[raw][col].receive[i] += this->mat[raw][col].weight*(3-abs(i-5))/3;
+                                //give with loss
+                                this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                                //Reflection
+                                this->mat[raw+sraw][col+scol].give[i] += (1-transmission)*this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                                this->mat[raw+sraw][col+scol].give[(i+4)%8] *= 1-transmission;
+                                //Internal fluid tension
+                                this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
+                                this->mat[raw+sraw][col+scol].give[i] *= 1-fluidTension;
+                            }
+                            else this->mat[raw][col].receive[i] += 0;
+                        }
                     }
                 }
             }
@@ -345,91 +418,179 @@ void Matrix::updateGives()
  * @brief Move each matter along it force vector
  * 
  */
-void Matrix::updatePositions()
+void Matrix::updatePositions(bool sens)
 {
-
     for(int raw = 0; raw<this->height; raw++)
     {
-        for(int col = 0; col<this->width; col++)
+        if(sens)
         {
-            //Look for neighbourhood
-            if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
+            for(int col = this->width; col>=0; col--)
             {
-                std::vector<bool> neighbours;
-                int sraw, scol;
-                for(int i = 0; i<8; i++)
+                //Look for neighbourhood
+                if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
                 {
-                    switch(i)
+                    std::vector<bool> neighbours;
+                    int sraw, scol;
+                    for(int i = 0; i<8; i++)
+                    {
+                        switch(i)
+                        {
+                            case 0:
+                                sraw = -1;scol = -1;
+                            break;
+                            case 1:
+                                sraw = -1;scol = 0;
+                            break;
+                            case 2:
+                                sraw = -1;scol = 1;
+                            break;
+                            case 3:
+                                sraw = 0;scol = 1;
+                            break;
+                            case 4:
+                                sraw = 1;scol = 1;
+                            break;
+                            case 5:
+                                sraw = 1;scol = 0;
+                            break;
+                            case 6:
+                                sraw = 1;scol = -1;
+                            break;
+                            case 7:
+                                sraw = 0;scol = -1;
+                            break;
+                        }
+                        //Boundary neighboors (nothing goes out)
+                        if((raw+sraw)<0) neighbours.push_back(true);
+                        else if((raw+sraw)>=this->height) neighbours.push_back(true);
+                        else if ((col+scol)<0) neighbours.push_back(true);
+                        else if((col+scol)>=this->width) neighbours.push_back(true);
+                        else neighbours.push_back(this->mat[raw+sraw][col+scol].drop);
+                    }
+                    //Move if needed
+                    switch(this->mat[raw][col].move(neighbours))
                     {
                         case 0:
-                            sraw = -1;scol = -1;
+                            this->mat[raw-1][col-1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
                         break;
                         case 1:
-                            sraw = -1;scol = 0;
+                            this->mat[raw-1][col].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
                         break;
                         case 2:
-                            sraw = -1;scol = 1;
+                            this->mat[raw-1][col+1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
                         break;
                         case 3:
-                            sraw = 0;scol = 1;
+                            this->mat[raw][col+1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
                         break;
                         case 4:
-                            sraw = 1;scol = 1;
+                            this->mat[raw+1][col+1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
                         break;
                         case 5:
-                            sraw = 1;scol = 0;
+                            this->mat[raw+1][col].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
                         break;
                         case 6:
-                            sraw = 1;scol = -1;
+                            this->mat[raw+1][col-1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
                         break;
                         case 7:
-                            sraw = 0;scol = -1;
+                            this->mat[raw][col-1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
+                        break;
+                        default:
                         break;
                     }
-                    //Boundary neighboors (nothing goes out)
-                    if((raw+sraw)<0) neighbours.push_back(true);
-                    else if((raw+sraw)>=this->height) neighbours.push_back(true);
-                    else if ((col+scol)<0) neighbours.push_back(true);
-                    else if((col+scol)>=this->width) neighbours.push_back(true);
-                    else neighbours.push_back(this->mat[raw+sraw][col+scol].drop);
                 }
-                //Move if needed
-                switch(this->mat[raw][col].move(neighbours))
+            }
+        }
+        else
+        {
+            for(int col = 0; col<this->width; col++)
+            {
+                //Look for neighbourhood
+                if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
                 {
-                    case 0:
-                        this->mat[raw-1][col-1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 1:
-                        this->mat[raw-1][col].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 2:
-                        this->mat[raw-1][col+1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 3:
-                        this->mat[raw][col+1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 4:
-                        this->mat[raw+1][col+1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 5:
-                        this->mat[raw+1][col].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 6:
-                        this->mat[raw+1][col-1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 7:
-                        this->mat[raw][col-1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    default:
-                    break;
+                    std::vector<bool> neighbours;
+                    int sraw, scol;
+                    for(int i = 0; i<8; i++)
+                    {
+                        switch(i)
+                        {
+                            case 0:
+                                sraw = -1;scol = -1;
+                            break;
+                            case 1:
+                                sraw = -1;scol = 0;
+                            break;
+                            case 2:
+                                sraw = -1;scol = 1;
+                            break;
+                            case 3:
+                                sraw = 0;scol = 1;
+                            break;
+                            case 4:
+                                sraw = 1;scol = 1;
+                            break;
+                            case 5:
+                                sraw = 1;scol = 0;
+                            break;
+                            case 6:
+                                sraw = 1;scol = -1;
+                            break;
+                            case 7:
+                                sraw = 0;scol = -1;
+                            break;
+                        }
+                        //Boundary neighboors (nothing goes out)
+                        if((raw+sraw)<0) neighbours.push_back(true);
+                        else if((raw+sraw)>=this->height) neighbours.push_back(true);
+                        else if ((col+scol)<0) neighbours.push_back(true);
+                        else if((col+scol)>=this->width) neighbours.push_back(true);
+                        else neighbours.push_back(this->mat[raw+sraw][col+scol].drop);
+                    }
+                    //Move if needed
+                    switch(this->mat[raw][col].move(neighbours))
+                    {
+                        case 0:
+                            this->mat[raw-1][col-1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
+                        break;
+                        case 1:
+                            this->mat[raw-1][col].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
+                        break;
+                        case 2:
+                            this->mat[raw-1][col+1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
+                        break;
+                        case 3:
+                            this->mat[raw][col+1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
+                        break;
+                        case 4:
+                            this->mat[raw+1][col+1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
+                        break;
+                        case 5:
+                            this->mat[raw+1][col].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
+                        break;
+                        case 6:
+                            this->mat[raw+1][col-1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
+                        break;
+                        case 7:
+                            this->mat[raw][col-1].hello(this->mat[raw][col]);
+                            this->mat[raw][col].bye();
+                        break;
+                        default:
+                        break;
+                    }
                 }
             }
         }

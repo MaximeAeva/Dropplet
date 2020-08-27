@@ -43,11 +43,11 @@ class Matrix{
         Matrix(int heigth, int width, Coord cd, int waterLvl = 20);
         ~Matrix();
        std::vector<std::vector<Matter> > mat;
-       void animate(int time);
+       void animate(int time, bool t);
 
     private:
-        void updateReceive();
-        void updatePositions();
+        void updateReceive(bool sens);
+        void updatePositions(bool sens);
         void updateGives();
         std::vector<Matter*> prioritize();
         void resetMoved();

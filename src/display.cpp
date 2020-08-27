@@ -58,28 +58,28 @@ void Display::show(Matrix m, int clingTime)
                 switch(s/2)
                 {
                     case 0:
-                        SetConsoleTextAttribute(hConsole, 9);
+                        SetConsoleTextAttribute(hConsole, 150);
                     break;
                     case 1:
-                        SetConsoleTextAttribute(hConsole, 11);
+                        SetConsoleTextAttribute(hConsole, 180);
                     break;
                     case 2:
-                        SetConsoleTextAttribute(hConsole, 10);
+                        SetConsoleTextAttribute(hConsole, 160);
                     break;
                     case 3:
-                        SetConsoleTextAttribute(hConsole, 14);
+                        SetConsoleTextAttribute(hConsole, 230);
                     break;
                     case 4:
-                        SetConsoleTextAttribute(hConsole, 13);
+                        SetConsoleTextAttribute(hConsole, 210);
                     break;
                     case 5:
-                        SetConsoleTextAttribute(hConsole, 12);
+                        SetConsoleTextAttribute(hConsole, 200);
                     break;
                     default:
-                        SetConsoleTextAttribute(hConsole, 15);
+                        SetConsoleTextAttribute(hConsole, 240);
                     break;
                 }
-                std::cout << "O";
+                std::cout << " ";
                 SetConsoleTextAttribute(hConsole, 15);
             }
             else
