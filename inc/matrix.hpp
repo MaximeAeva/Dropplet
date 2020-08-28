@@ -24,7 +24,7 @@ class Matter{
         bool moved = false;//Has it moved ?
         void pfd();//Dynamic fundamental principe
         int move(std::vector<bool> b);//Where to go ?
-        void reverseGive(bool vert, float coeff = 0.8);
+        void reverseGive(char typ, float coeff = 0.8);
         void bye();
         float strenght();
         void hello(Matter);
@@ -51,6 +51,7 @@ class Matrix{
         void updateGives();
         std::vector<Matter*> prioritize();
         void resetMoved();
+        void resetReceive();
         int height;
         int width;
 };

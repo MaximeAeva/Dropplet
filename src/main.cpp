@@ -10,9 +10,9 @@ int main()
     srand(time(NULL));
     Coord drop;
     Reader r("Welcome to my Github");
-    drop.raw = 3;
+    drop.raw = 15;
     drop.col = int(r.titleSize.width/2);
-    Matrix m(height, r.titleSize.width, drop, height-7);
+    Matrix m(height, r.titleSize.width, drop, height-3);
     Display d(height, r.titleSize.width, r.text);
     int i = 0;
     bool t = true;

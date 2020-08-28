@@ -54,8 +54,8 @@ void Display::show(Matrix m, int clingTime)
         {
             if(m.mat[raw][col].drop) 
             {
-                int s = int(m.mat[raw][col].strenght());
-                switch(s/2)
+                int s = int(m.mat[raw][col].strenght()/1);
+                switch(s)
                 {
                     case 0:
                         SetConsoleTextAttribute(hConsole, 150);
