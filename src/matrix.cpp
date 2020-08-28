@@ -94,19 +94,12 @@ int Matter::move(std::vector<bool> b)
     //Distribute
     if(val.empty())
     {
-        int pos = 0;
-        int val = 0;
-        for(int i = 0; i<8; i++)
-        {
-            if(this->give[i] > val)
-            {
-                pos = i;
-                val = this->give[i];
-            }
-        }
         std::vector<float> v = this->give;
-        for(int i = -1; i<2; i++) this->give[(pos+i)%8] += (2-abs(i))*v[pos]/4;
-        this->give[pos] -= v[pos];
+        for(int pos = 0; pos < 8; pos++)
+        {
+            for(int i = -1; i<2; i++) this->give[(pos+i)%8] += (2-abs(i))*v[pos]/4;
+            this->give[pos] -= v[pos];
+        }
         return -1;
     }
     //Move
@@ -255,8 +248,8 @@ void Matrix::animate(int time, bool t)
  */
 void Matrix::updateReceive(bool sens)
 {
-    float fluidTension = 0.2;//Followed forces
-    float transmission = 0.9;//Give each others
+    float fluidTension = 0;//Followed forces
+    float transmission = 1;//Give each others
     for(int raw = 0; raw<this->height; raw++)
     {
         if(sens)
@@ -309,10 +302,11 @@ void Matrix::updateReceive(bool sens)
                             //Counter reaction
                             if(i>2) this->mat[raw][col].receive[i] += this->mat[raw][col].weight*(3-abs(i-5))/3;
                             //give with loss
-                            this->mat[raw][col].receive[i] += transmission*(this->mat[raw+sraw][col+scol].give[(i+4)%8]-this->mat[raw][col].give[i]);
+                            this->mat[raw+sraw][col+scol].receive[(i+4)%8] += transmission*(this->mat[raw][col].give[i]);
+                            this->mat[raw][col].receive[i] += (2-transmission)*(this->mat[raw][col].give[i]);
                             //Internal fluid tension
-                            //this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
-                            //this->mat[raw+sraw][col+scol].give[i] *= 1-fluidTension;
+                            this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw][col].give[i];
+                            this->mat[raw][col].receive[i] += fluidTension*this->mat[raw][col].give[i];
                         }
                     }
                 }
@@ -369,10 +363,11 @@ void Matrix::updateReceive(bool sens)
                             //Counter reaction
                             if(i>2) this->mat[raw][col].receive[i] += this->mat[raw][col].weight*(3-abs(i-5))/3;
                             //give with loss
-                            this->mat[raw][col].receive[i] += transmission*(this->mat[raw+sraw][col+scol].give[(i+4)%8]-this->mat[raw][col].give[i]);
+                            this->mat[raw+sraw][col+scol].receive[(i+4)%8] += transmission*(this->mat[raw][col].give[i]);
+                            this->mat[raw][col].receive[i] += (2-transmission)*(this->mat[raw][col].give[i]);
                             //Internal fluid tension
-                            //this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
-                            //this->mat[raw+sraw][col+scol].give[i] *= 1-fluidTension;
+                            this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
+                            this->mat[raw+sraw][col+scol].receive[i] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
                         }
                     }
                 }
