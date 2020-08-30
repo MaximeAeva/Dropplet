@@ -12,6 +12,11 @@ struct Coord{
     int col;
 };
 
+struct F{
+    float x;
+    float y;
+};
+
 /**
  * @brief A way to give matter its own behaviour
  * 
@@ -31,6 +36,7 @@ class Matter{
         int weight;
         std::vector<float> receive;//eight neighbours
         std::vector<float> give;//give others drop its forces
+        F force;
 };
 
 /**
@@ -52,6 +58,7 @@ class Matrix{
         std::vector<Matter*> prioritize();
         void resetMoved();
         void resetReceive();
+        void resetGive();
         int height;
         int width;
 };

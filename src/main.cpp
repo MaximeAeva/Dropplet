@@ -9,19 +9,19 @@ int main()
     int height = 29;
     srand(time(NULL));
     Coord drop;
-    Reader r("Hello");
-    drop.raw = 1;
+    Reader r("Hello World");
+    drop.raw = 0;
     drop.col = int(r.titleSize.width/2);
-    Matrix m(height, r.titleSize.width, drop, height-10);
+    Matrix m(height, r.titleSize.width, drop, height-5);
     Display d(height, r.titleSize.width, r.text);
     int i = 0;
     bool t = true;
     while(1)
     {
-        d.show(m, 0);
+        d.show(m, 0);//Refresh time can be limit
         m.animate(0, t);
         if(t) t = false;
-        else t= true;
+        else t = true;
     }
 
     m.~Matrix();
