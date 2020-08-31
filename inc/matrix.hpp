@@ -52,7 +52,7 @@ class Matrix{
        void animate(int time, bool t);
 
     private:
-        void updateReceive(bool sens);
+        void updateReceive();
         void updatePositions(bool sens);
         void updateGives();
         std::vector<Matter*> prioritize();
