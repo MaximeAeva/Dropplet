@@ -12,9 +12,8 @@ int main()
     Reader r("Hello");
     drop.raw = 0;
     drop.col = int(r.titleSize.width/2);
-    Matrix m(height, r.titleSize.width, drop, height-10);
+    Matrix m(height, r.titleSize.width, drop, height-2);
     Display d(height, r.titleSize.width, r.text);
-    int i = 0;
     bool t = true;
     while(1)
     {

@@ -28,11 +28,11 @@ class Matter{
         bool drop = false;//is it a water drop?
         bool moved = false;//Has it moved ?
         void pfd();//Dynamic fundamental principe
-        int move(std::vector<bool> b);//Where to go ?
+        int move(std::vector<bool> b);//Where do I go ?
         void reverseGive(char typ, float coeff = 0.8);
         void bye();
         float strenght();
-        void hello(Matter);
+        void hello(Matter m);
         int weight;
         int giveDir;
         std::vector<float> receive;//eight neighbours

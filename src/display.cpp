@@ -5,7 +5,7 @@ Display::Display(int height = 100, int width = 100, std::vector<std::string> tit
     this->height = height;
     this->width = width;
     this->title = title;
-    for(int i = 0; i < title.size(); i++) this->color.push_front(rand() % 14 + 1);
+    for(int i = 0; i < int(title.size()); i++) this->color.push_front(rand() % 14 + 1);
     if (system("CLS")) system("clear");
 }
 
@@ -28,7 +28,7 @@ void Display::show(Matrix m, int clingTime)
     std::cout << "+" << std::endl;
     this->color.pop_back();
     this->color.push_front(rand() % 14 + 1);
-    for(int i = 0; i<this->title.size(); i++) 
+    for(int i = 0; i<int(this->title.size()); i++) 
     {
         SetConsoleTextAttribute(hConsole, border);
         std::cout << "|";
@@ -106,8 +106,5 @@ void Display::gotoxy( int column, int line )
 COORD coord;
 coord.X = column;
 coord.Y = line;
-SetConsoleCursorPosition(
-GetStdHandle( STD_OUTPUT_HANDLE ),
-coord
-);
+SetConsoleCursorPosition(GetStdHandle( STD_OUTPUT_HANDLE ),coord);
 }

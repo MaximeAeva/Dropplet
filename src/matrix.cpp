@@ -15,7 +15,6 @@ Matter::Matter(bool d)
     if(d) this->weight = 1;
     this->force = {0, 0};
     this->receive = v;
-    this->giveDir = 0;
 }
 
 /**
@@ -57,7 +56,7 @@ void Matter::hello(Matter m)
 }
 
 /**
- * @brief Give the traction forces
+ * @brief Compute the traction forces
  *  
  */
 void Matter::pfd()
@@ -172,14 +171,15 @@ void Matter::pfd()
  */
 int Matter::move(std::vector<bool> b)
 {
-    if(this->give[this->giveDir] == 0) return -1;
-    if(!b[this->giveDir]) return this->giveDir;//Priority to the major direction
-    else if(b[(this->giveDir-1)%8] && b[(this->giveDir+1)%8]) return -1;//If nothing stay here
-    else if((!b[(this->giveDir-1)%8]) && (!b[(this->giveDir+1)%8])) return (this->giveDir - 1 + 2*(rand()%2))%8;//Randomly go right or left
+    int k = this->giveDir;
+    if(this->give[k] == 0) return -1;
+    if(!b[k]) return k;//Priority to the major direction
+    else if(b[(k-1)%8] && b[(k+1)%8]) return -1;//If nothing stay here
+    else if((!b[(k-1)%8]) && (!b[(k+1)%8])) return (k - 1 + 2*(rand()%2))%8;//Randomly go right or left
     else
     {
-        if(!b[this->giveDir-1]) return (this->giveDir-1)%8;
-        else return (this->giveDir+1)%8;
+        if(!b[(k-1)%8]) return (k-1)%8;
+        else return (k+1)%8;
     }
 }
 
@@ -307,8 +307,8 @@ void Matrix::animate(int time, bool t)
  */
 void Matrix::updateReceive()
 {
-    float fluidTension = 0.9;//Followed forces
-    float transmission = 0.5;//Coefficient of transmission
+    float fluidTension = 0.6;//Followed forces
+    float transmission = 0.8;//Coefficient of transmission
     for(int raw = 0; raw<this->height; raw++)
     {
         for(int col = 0; col<this->width; col++)
