@@ -34,6 +34,7 @@ class Matter{
         float strenght();
         void hello(Matter);
         int weight;
+        int giveDir;
         std::vector<float> receive;//eight neighbours
         std::vector<float> give;//give others drop its forces
         F force;
@@ -55,7 +56,6 @@ class Matrix{
         void updateReceive();
         void updatePositions(bool sens);
         void updateGives();
-        std::vector<Matter*> prioritize();
         void resetMoved();
         void resetReceive();
         void resetGive();

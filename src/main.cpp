@@ -10,9 +10,9 @@ int main()
     srand(time(NULL));
     Coord drop;
     Reader r("Hello");
-    drop.raw = 1;
+    drop.raw = 0;
     drop.col = int(r.titleSize.width/2);
-    Matrix m(height, r.titleSize.width, drop, height-2);
+    Matrix m(height, r.titleSize.width, drop, height-10);
     Display d(height, r.titleSize.width, r.text);
     int i = 0;
     bool t = true;

@@ -15,6 +15,7 @@ Matter::Matter(bool d)
     if(d) this->weight = 1;
     this->force = {0, 0};
     this->receive = v;
+    this->giveDir = 0;
 }
 
 /**
@@ -61,32 +62,32 @@ void Matter::hello(Matter m)
  */
 void Matter::pfd()
 {
-    float epsilon = 1e-5;
+    float epsilon = 1e-3;
     float x, y;
-    for(int i = 0; i<8; i++)
+    for(int i = 0; i<8; i++)//Add force received from each direction
     {
         switch(i)
         {
             case 0:
-                x = -1/sqrt(2);y = -1/sqrt(2);
+                x = -1;y = -1;
             break;
             case 1:
                 x = -1;y = 0;
             break;
             case 2:
-                x = -1/sqrt(2);y = 1/sqrt(2);
+                x = -1;y = 1;
             break;
             case 3:
                 x = 0;y = 1;
             break;
             case 4:
-                x = 1/sqrt(2);y = 1/sqrt(2);
+                x = 1;y = 1;
             break;
             case 5:
                 x = 1;y = 0;
             break;
             case 6:
-                x = 1/sqrt(2);y = -1/sqrt(2);
+                x = 1;y = -1;
             break;
             case 7:
                 x = 0;y = -1;
@@ -95,70 +96,72 @@ void Matter::pfd()
         this->force.x += this->receive[i]*x;
         this->force.y += this->receive[i]*y;
     }
+    //Avoid quasi null force movement
     if(abs(this->force.x) < epsilon) this->force.x = 0;
     if(abs(this->force.y) < epsilon) this->force.y = 0;
+    //Compute force angle to know the movement direction
     int angle;
-    if(this->force.x == 0 && this->force.y == 0) angle = 0;
+    if((this->force.x == 0) && (this->force.y == 0)) angle = 0;
     else angle = floor(atan2(this->force.x, this->force.y)/(3.1415/8));
-    int giveDir;
     switch(angle)
     {
         case -9:
-            giveDir = 7;
+            this->giveDir = 7;
         break;
         case -8:
-            giveDir = 7;
+            this->giveDir = 7;
         break;
         case -7:
-            giveDir = 6;
+            this->giveDir = 6;
         break;
         case -6:
-            giveDir = 6;
+            this->giveDir = 6;
         break;
         case -5:
-            giveDir = 5;
+            this->giveDir = 5;
         break;
         case -4:
-            giveDir = 5;
+            this->giveDir = 5;
         break;
         case -3:
-            giveDir = 4;
+            this->giveDir = 4;
         break;
         case -2:
-            giveDir = 4;
+            this->giveDir = 4;
         break;
         case -1:
-            giveDir = 3;
+            this->giveDir = 3;
         break;
         case 0:
-            giveDir = 3;
+            this->giveDir = 3;
         break;
         case 1:
-            giveDir = 2;
+            this->giveDir = 2;
         break;
         case 2:
-            giveDir = 2;
+            this->giveDir = 2;
         break;
         case 3:
-            giveDir = 1;
+            this->giveDir = 1;
         break;
         case 4:
-            giveDir = 1;
+            this->giveDir = 1;
         break;
         case 5:
-            giveDir = 0;
+            this->giveDir = 0;
         break;
         case 6:
-            giveDir = 0;
+            this->giveDir = 0;
         break;
         case 7:
-            giveDir = 7;
+            this->giveDir = 7;
         break;
         case 8:
-            giveDir = 7;
+            this->giveDir = 7;
         break;
     }
-    for(int i = -1; i<2; i++) this->give[(giveDir+i)%8] = this->strenght()/3;
+    //Translate into a given force
+    for(int i = -1; i<2; i++) this->give[(this->giveDir+i)%8] = (2-abs(i)) * this->strenght()/4;
 }
 
 /**
@@ -169,22 +172,14 @@ void Matter::pfd()
  */
 int Matter::move(std::vector<bool> b)
 {
-    std::vector<int> pos;
-    for(int i = 0; i<8; i++)
-    {
-        if(this->give[i]>0)
-        {
-            pos.push_back(i);
-        }
-    }
-    if(pos.empty()) return -1;
-    if(!b[pos[1]]) return pos[1];//Priority to the major direction
-    else if(b[pos[0]] && b[pos[2]]) return -1;//If nothing stay here
-    else if(!b[pos[0]] && !b[pos[2]]) return pos[0];//Randomly go right or left
+    if(this->give[this->giveDir] == 0) return -1;
+    if(!b[this->giveDir]) return this->giveDir;//Priority to the major direction
+    else if(b[(this->giveDir-1)%8] && b[(this->giveDir+1)%8]) return -1;//If nothing stay here
+    else if((!b[(this->giveDir-1)%8]) && (!b[(this->giveDir+1)%8])) return (this->giveDir - 1 + 2*(rand()%2))%8;//Randomly go right or left
     else
     {
-        if(!b[pos[0]]) return pos[0];
-        else return pos[2];
+        if(!b[this->giveDir-1]) return (this->giveDir-1)%8;
+        else return (this->giveDir+1)%8;
     }
 }
 
@@ -199,16 +194,16 @@ void Matter::reverseGive(char typ, float c)
     switch(typ)
     {
         case 'u':
-            this->force.x *= -c;
+            if(this->force.x>0) this->force.x *= -c;
         break;
         case 'l':
-            this->force.y *= -c;
+            if(this->force.y<0) this->force.y *= -c;
         break;
         case 'r':
-            this->force.y *= -c;
+            if(this->force.y>0) this->force.y *= -c;
         break;
         case 'b':
-            this->force.x *= -c;
+            if(this->force.x<0) this->force.x *= -c;
         break;
     }
 }
@@ -246,7 +241,14 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
             {
                 Matter p(true);
                 //p.weight = 30;//Drop weight
-                //p.force.y += 30;
+                //p.force.y += 60;
+                v.push_back(p);
+            }
+            else if((raw==cd.raw)&&(col==(cd.col+1))) 
+            {
+                Matter p(true);
+                //p.weight = 30;//Drop weight
+                //p.force.y += 60;
                 v.push_back(p);
             }
             else if(raw >= waterLvl) 
@@ -260,7 +262,7 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
                 v.push_back(p);
             }
         }
-        this->mat.push_back(v);
+        this->mat.push_back(v);//Matter matrix
     }
 }
 
@@ -290,17 +292,11 @@ void Matrix::animate(int time, bool t)
 {
     for(int i = 0; i<=time; i++)
     {
-        //std::cout <<"r";
         updateReceive();//Update external forces
-        //std::cout <<"Rg";
         resetGive();//No direction for now
-        //std::cout <<"g";
         updateGives();//Update movement direction
-        //std::cout <<"Rr";
         resetReceive();//Say forces will be reevaluated
-        //std::cout <<"p";
         updatePositions(t);//Update positions
-        //std::cout <<"Rm";
         resetMoved();//Say each cell is movable
     }
 }
@@ -311,8 +307,8 @@ void Matrix::animate(int time, bool t)
  */
 void Matrix::updateReceive()
 {
-    float fluidTension = 0;//Followed forces
-    float transmission = 0.8;//Give each others
+    float fluidTension = 0.9;//Followed forces
+    float transmission = 0.5;//Coefficient of transmission
     for(int raw = 0; raw<this->height; raw++)
     {
         for(int col = 0; col<this->width; col++)
@@ -363,10 +359,12 @@ void Matrix::updateReceive()
                         if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight;
                         //give with loss (cancel + add a bounce force)
                         this->mat[raw+sraw][col+scol].receive[(i+4)%8] += transmission*this->mat[raw][col].give[i];
-                        //cancel
-                        this->mat[raw][col].receive[i] += transmission*(this->mat[raw][col].give[i]);
+                        //cancel force + bounce (1 +1-tr)
+                        this->mat[raw][col].receive[i] += (2-transmission)*this->mat[raw][col].give[i];
                         //Internal fluid tension
-                        this->mat[raw][col].receive[(i+4)%8] += fluidTension;
+                        this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
+                        //Internal fluid loss
+                        this->mat[raw+sraw][col+scol].receive[i] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
                     }
                 }
             }
@@ -588,14 +586,17 @@ void Matrix::updatePositions(bool sens)
  */
 void Matrix::resetMoved()
 {
+    float k = 0;
     for(int raw = 0; raw<this->height; raw++)
     {
         for(int col = 0; col<this->width; col++)
         {
             if(this->mat[raw][col].drop) 
                 this->mat[raw][col].moved = false;
+            k += this->mat[raw][col].strenght();
         }
     }
+    std::cout << k;
 }
 
 /**
