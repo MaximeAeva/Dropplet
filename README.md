@@ -1,7 +1,7 @@
 # Dropplet
 > A cmd colored simulation of a water drop
 
-Description in coming
+Pixel drop simulation of a waterdrop falling into water
 
 ![Hey!](https://github.com/MaximeAeva/Dropplet/blob/master/res/hello.PNG)
 
@@ -14,7 +14,7 @@ git clone
 
 ## Usage example
 
-The beauty of an equation described nature beauty.
+The beauty of an equation describing natural beauty.
 
 ## Release History
 

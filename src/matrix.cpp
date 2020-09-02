@@ -56,14 +56,17 @@ void Matter::hello(Matter m)
 }
 
 /**
- * @brief Compute the traction forces
- *  
+ * @brief Update forces and give its direction
+ * 
+ * @param wallLoss Loss against a wall
+ * @param wall Where is the wall
  */
-void Matter::pfd()
+void Matter::pfd(float wallLoss, float timeLoss, char wall = 'n')
 {
+    //Add force received from each direction
     float epsilon = 1e-3;
     float x, y;
-    for(int i = 0; i<8; i++)//Add force received from each direction
+    for(int i = 0; i<8; i++)
     {
         switch(i)
         {
@@ -95,9 +98,13 @@ void Matter::pfd()
         this->force.x += this->receive[i]*x;
         this->force.y += this->receive[i]*y;
     }
-    //Avoid quasi null force movement
+    //Avoid quasi null force movement and apply timeLoss
     if(abs(this->force.x) < epsilon) this->force.x = 0;
+    else this->force.x *= 1-timeLoss;
     if(abs(this->force.y) < epsilon) this->force.y = 0;
+    else this->force.y *= 1-timeLoss;
+    //Reverse if directed against a wall
+    if(wall !='n') this->reverseForce(wall, 1-wallLoss);
     //Compute force angle to know the movement direction
     int angle;
     if((this->force.x == 0) && (this->force.y == 0)) angle = 0;
@@ -189,7 +196,7 @@ int Matter::move(std::vector<bool> b)
  * @param typ Where is the wall (u->up,r->right,b->bottom,l->left) 
  * @param c Coefficient of transmission
  */
-void Matter::reverseGive(char typ, float c)
+void Matter::reverseForce(char typ, float c)
 {
     switch(typ)
     {
@@ -208,17 +215,7 @@ void Matter::reverseGive(char typ, float c)
     }
 }
 
-/**
- * @brief Give Matter movement strenght
- * 
- * @return float 
- */
-float Matter::strenght()
-{
-    return sqrt(pow(this->force.x, 2)+pow(this->force.y, 2));
-}
-
-
+/*#############################Second Class#############################*/  
 
 /**
  * @brief A Matrix of matter right here (Construct a new Matrix:: Matrix object)
@@ -284,17 +281,22 @@ Matrix::~Matrix()
 }
 
 /**
- * @brief Compute the next step
+ * @brief Simulation routine
  * 
- * @param time Speed at wich you want to travel
+ * @param time Display speed
+ * @param t Parity
  */
 void Matrix::animate(int time, bool t)
 {
     for(int i = 0; i<=time; i++)
     {
-        updateReceive();//Update external forces
+        updateTransmission(0.8, 0);//Update external forces from gives
         resetGive();//No direction for now
-        updateGives();//Update movement direction
+        updateGives(0.5, 0);//Update movement direction
+        resetReceive();//Say forces will be reevaluated
+        updateTension(0.6);//Update internal fluid tensions
+        resetGive();//No direction for now
+        updateGives(0.5, 0);//Update movement direction
         resetReceive();//Say forces will be reevaluated
         updatePositions(t);//Update positions
         resetMoved();//Say each cell is movable
@@ -302,13 +304,14 @@ void Matrix::animate(int time, bool t)
 }
 
 /**
- * @brief Update external forces of each matter
+ * @brief Update transmission
  * 
+ * @param transmission coeff of transmission
+ * 
+ * @param loss vanishing coeff
  */
-void Matrix::updateReceive()
+void Matrix::updateTransmission(float transmission, float loss)
 {
-    float fluidTension = 0.6;//Followed forces
-    float transmission = 0.8;//Coefficient of transmission
     for(int raw = 0; raw<this->height; raw++)
     {
         for(int col = 0; col<this->width; col++)
@@ -357,10 +360,62 @@ void Matrix::updateReceive()
                     {
                         //Counter reaction
                         if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight;
-                        //give with loss (cancel + add a bounce force)
-                        this->mat[raw+sraw][col+scol].receive[(i+4)%8] += transmission*this->mat[raw][col].give[i];
+                        //receive with loss
+                        this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
                         //cancel force + bounce (1 +1-tr)
                         this->mat[raw][col].receive[i] += (2-transmission)*this->mat[raw][col].give[i];
+                    }
+                }
+            }
+        }       
+    }
+}
+
+/**
+ * @brief Update fluid tension
+ * 
+ * @param fluidTension coeff of tension
+ */
+void Matrix::updateTension(float fluidTension)
+{
+    for(int raw = 0; raw<this->height; raw++)
+    {
+        for(int col = 0; col<this->width; col++)
+        {
+            if(this->mat[raw][col].drop)//If a drop, look forces around
+            {
+                int sraw, scol;
+                for(int i = 0; i<8; i++)
+                {
+                    switch(i)
+                    {
+                        case 0:
+                            sraw = -1;scol = -1;
+                        break;
+                        case 1:
+                            sraw = -1;scol = 0;
+                        break;
+                        case 2:
+                            sraw = -1;scol = 1;
+                        break;
+                        case 3:
+                            sraw = 0;scol = 1;
+                        break;
+                        case 4:
+                            sraw = 1;scol = 1;
+                        break;
+                        case 5:
+                            sraw = 1;scol = 0;
+                        break;
+                        case 6:
+                            sraw = 1;scol = -1;
+                        break;
+                        case 7:
+                            sraw = 0;scol = -1;
+                        break;
+                    }
+                    if(this->mat[raw+sraw][col+scol].drop)
+                    {
                         //Internal fluid tension
                         this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
                         //Internal fluid loss
@@ -373,25 +428,25 @@ void Matrix::updateReceive()
 }
 
 /**
- * @brief Update internal forces of each matter
+ * @brief Update forces and set new give
  * 
+ * @param wallLoss Loss energy during a collision with a wall
+ * @param timeLoss Vanishing energy over time
  */
-void Matrix::updateGives()
+void Matrix::updateGives(float wallLoss, float timeLoss)
 {
-    float wallLoss = 0.5;//When against a border
-    float timeLoss = 0;
     for(int raw = 0; raw<this->height; raw++)
     {
         for(int col = 0; col<this->width; col++)
         {
             if(this->mat[raw][col].drop) 
             {
-                if((raw-1)<0) this->mat[raw][col].reverseGive('u', 1-wallLoss);
-                if((raw+1)>=this->height) this->mat[raw][col].reverseGive('b', 1-wallLoss);
-                if((col-1)<0) this->mat[raw][col].reverseGive('l', 1-wallLoss);
-                if((col+1)>=this->width) this->mat[raw][col].reverseGive('r', 1-wallLoss);
-                this->mat[raw][col].pfd();
-                for(int i = 0; i<8; i++) this->mat[raw][col].give[i] *= 1-timeLoss;
+                char wall = 'n';
+                if((raw-1)<0) wall = 'u';
+                else if((raw+1)>=this->height) wall = 'b';
+                if((col-1)<0) wall = 'l';
+                else if((col+1)>=this->width) wall = 'r';
+                this->mat[raw][col].pfd(wallLoss, timeLoss, wall);
             }
         }
     }

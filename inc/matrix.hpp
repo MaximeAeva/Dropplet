@@ -27,15 +27,15 @@ class Matter{
         ~Matter();
         bool drop = false;//is it a water drop?
         bool moved = false;//Has it moved ?
-        void pfd();//Dynamic fundamental principe
+        void pfd(float wallLoss, float timeLoss, char wall);//Dynamic fundamental principe
         int move(std::vector<bool> b);//Where do I go ?
-        void reverseGive(char typ, float coeff = 0.8);
+        void reverseForce(char typ, float coeff = 0.8);
         void bye();
-        float strenght();
+        float strenght(){return sqrt(pow(this->force.x, 2)+pow(this->force.y, 2));};
         void hello(Matter m);
         int weight;
         int giveDir;
-        std::vector<float> receive;//eight neighbours
+        std::vector<float> receive;//Forces from 8 directions
         std::vector<float> give;//give others drop its forces
         F force;
 };
@@ -53,9 +53,10 @@ class Matrix{
        void animate(int time, bool t);
 
     private:
-        void updateReceive();
+        void updateTransmission(float transmission, float loss);
         void updatePositions(bool sens);
-        void updateGives();
+        void updateGives(float wallLoss, float timeLoss);
+        void updateTension(float fluidTension);
         void resetMoved();
         void resetReceive();
         void resetGive();
