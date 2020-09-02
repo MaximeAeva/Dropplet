@@ -1,5 +1,45 @@
 #include <matrix.hpp>
 
+/**
+ * @brief Neighboors coord
+ * 
+ * @param i Direction 
+ * @param raw Return raw or col
+ * @return int 
+ */
+int theSwitcher(int i, bool raw)
+{
+    int sraw, scol;
+    switch(i)
+    {
+        case 0:
+            sraw = -1;scol = -1;
+        break;
+        case 1:
+            sraw = -1;scol = 0;
+        break;
+        case 2:
+            sraw = -1;scol = 1;
+        break;
+        case 3:
+            sraw = 0;scol = 1;
+        break;
+        case 4:
+            sraw = 1;scol = 1;
+        break;
+        case 5:
+            sraw = 1;scol = 0;
+        break;
+        case 6:
+            sraw = 1;scol = -1;
+        break;
+        case 7:
+            sraw = 0;scol = -1;
+        break;
+    }
+    if(raw) return sraw;
+    else return scol;
+}
 
 /**
  * @brief Woaw matter *-* (Construct a new Matter:: Matter object)
@@ -65,38 +105,10 @@ void Matter::pfd(float wallLoss, float timeLoss, char wall = 'n')
 {
     //Add force received from each direction
     float epsilon = 1e-3;
-    float x, y;
     for(int i = 0; i<8; i++)
     {
-        switch(i)
-        {
-            case 0:
-                x = -1;y = -1;
-            break;
-            case 1:
-                x = -1;y = 0;
-            break;
-            case 2:
-                x = -1;y = 1;
-            break;
-            case 3:
-                x = 0;y = 1;
-            break;
-            case 4:
-                x = 1;y = 1;
-            break;
-            case 5:
-                x = 1;y = 0;
-            break;
-            case 6:
-                x = 1;y = -1;
-            break;
-            case 7:
-                x = 0;y = -1;
-            break;
-        }
-        this->force.x += this->receive[i]*x;
-        this->force.y += this->receive[i]*y;
+        this->force.x += this->receive[i]*theSwitcher(i, true);
+        this->force.y += this->receive[i]*theSwitcher(i, false);
     }
     //Avoid quasi null force movement and apply timeLoss
     if(abs(this->force.x) < epsilon) this->force.x = 0;
@@ -176,7 +188,7 @@ void Matter::pfd(float wallLoss, float timeLoss, char wall = 'n')
  * @param b neighbours kind of matter
  * @return int position to move (-1 if stay)
  */
-int Matter::move(std::vector<bool> b)
+int Matter::move(std::vector<int> b)
 {
     int k = this->giveDir;
     if(this->give[k] == 0) return -1;
@@ -241,7 +253,7 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
                 //p.force.y += 60;
                 v.push_back(p);
             }
-            else if((raw==cd.raw)&&(col==(cd.col+1))) 
+           else if((raw==cd.raw)&&(col==(cd.col+1))) 
             {
                 Matter p(true);
                 //p.weight = 30;//Drop weight
@@ -290,16 +302,27 @@ void Matrix::animate(int time, bool t)
 {
     for(int i = 0; i<=time; i++)
     {
+        //std::cout << "1";
         updateTransmission(0.8, 0);//Update external forces from gives
+        //std::cout << "2";
         resetGive();//No direction for now
+        //std::cout << "3";
         updateGives(0.5, 0);//Update movement direction
+        //std::cout << "4";
         resetReceive();//Say forces will be reevaluated
+        //std::cout << "5";
         updateTension(0.6);//Update internal fluid tensions
+        //std::cout << "6";
         resetGive();//No direction for now
+        //std::cout << "7";
         updateGives(0.5, 0);//Update movement direction
+        //std::cout << "8";
         resetReceive();//Say forces will be reevaluated
+        //std::cout << "9";
         updatePositions(t);//Update positions
+        //std::cout << "10";
         resetMoved();//Say each cell is movable
+        //std::cout << std::endl;
     }
 }
 
@@ -318,37 +341,13 @@ void Matrix::updateTransmission(float transmission, float loss)
         {
             if(this->mat[raw][col].drop)//If a drop, look forces around
             {
-                int sraw, scol;
                 for(int i = 0; i<8; i++)
                 {
-                    switch(i)
-                    {
-                        case 0:
-                            sraw = -1;scol = -1;
-                        break;
-                        case 1:
-                            this->mat[raw][col].receive[i] += this->mat[raw][col].weight;
-                            sraw = -1;scol = 0;
-                        break;
-                        case 2:
-                            sraw = -1;scol = 1;
-                        break;
-                        case 3:
-                            sraw = 0;scol = 1;
-                        break;
-                        case 4:
-                            sraw = 1;scol = 1;
-                        break;
-                        case 5:
-                            sraw = 1;scol = 0;
-                        break;
-                        case 6:
-                            sraw = 1;scol = -1;
-                        break;
-                        case 7:
-                            sraw = 0;scol = -1;
-                        break;
-                    }
+                    int sraw = theSwitcher(i, true);
+                    int scol = theSwitcher(i, false);
+
+                    if(i==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight;
+
                     //Bound
                     if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width)
                     {   
@@ -363,7 +362,7 @@ void Matrix::updateTransmission(float transmission, float loss)
                         //receive with loss
                         this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
                         //cancel force + bounce (1 +1-tr)
-                        this->mat[raw][col].receive[i] += (2-transmission)*this->mat[raw][col].give[i];
+                        this->mat[raw][col].receive[i] += (2-transmission - loss)*this->mat[raw][col].give[i];
                     }
                 }
             }
@@ -384,37 +383,12 @@ void Matrix::updateTension(float fluidTension)
         {
             if(this->mat[raw][col].drop)//If a drop, look forces around
             {
-                int sraw, scol;
                 for(int i = 0; i<8; i++)
                 {
-                    switch(i)
-                    {
-                        case 0:
-                            sraw = -1;scol = -1;
-                        break;
-                        case 1:
-                            sraw = -1;scol = 0;
-                        break;
-                        case 2:
-                            sraw = -1;scol = 1;
-                        break;
-                        case 3:
-                            sraw = 0;scol = 1;
-                        break;
-                        case 4:
-                            sraw = 1;scol = 1;
-                        break;
-                        case 5:
-                            sraw = 1;scol = 0;
-                        break;
-                        case 6:
-                            sraw = 1;scol = -1;
-                        break;
-                        case 7:
-                            sraw = 0;scol = -1;
-                        break;
-                    }
-                    if(this->mat[raw+sraw][col+scol].drop)
+                    int sraw = theSwitcher(i, true);
+                    int scol = theSwitcher(i, false);
+                    if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width){}
+                    else if(this->mat[raw+sraw][col+scol].drop)
                     {
                         //Internal fluid tension
                         this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
@@ -458,52 +432,31 @@ void Matrix::updateGives(float wallLoss, float timeLoss)
  */
 void Matrix::updatePositions(bool sens)
 {
+    std::vector<int> neighbours;
     for(int raw = 0; raw<this->height; raw++)
     {
         if(!sens)
         {
-            for(int col = this->width; col>=0; col--)
+            for(int col = this->width-1; col>=0; col--)
             {
                 //Look for neighbourhood
                 if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
                 {
-                    std::vector<bool> neighbours;
-                    int sraw, scol;
+                    neighbours = {};
                     for(int i = 0; i<8; i++)
                     {
-                        switch(i)
-                        {
-                            case 0:
-                                sraw = -1;scol = -1;
-                            break;
-                            case 1:
-                                sraw = -1;scol = 0;
-                            break;
-                            case 2:
-                                sraw = -1;scol = 1;
-                            break;
-                            case 3:
-                                sraw = 0;scol = 1;
-                            break;
-                            case 4:
-                                sraw = 1;scol = 1;
-                            break;
-                            case 5:
-                                sraw = 1;scol = 0;
-                            break;
-                            case 6:
-                                sraw = 1;scol = -1;
-                            break;
-                            case 7:
-                                sraw = 0;scol = -1;
-                            break;
-                        }
+                        int sraw = theSwitcher(i, true);
+                        int scol = theSwitcher(i, false);
                         //Boundary neighboors (nothing goes out)
-                        if((raw+sraw)<0) neighbours.push_back(true);
-                        else if((raw+sraw)>=this->height) neighbours.push_back(true);
-                        else if ((col+scol)<0) neighbours.push_back(true);
-                        else if((col+scol)>=this->width) neighbours.push_back(true);
-                        else neighbours.push_back(this->mat[raw+sraw][col+scol].drop);
+                        if((raw+sraw)<0) neighbours.push_back(1);
+                        else if((raw+sraw)>=this->height) neighbours.push_back(1);
+                        else if ((col+scol)<0) neighbours.push_back(1);
+                        else if((col+scol)>=this->width) neighbours.push_back(1);
+                        else
+                        {
+                            if(this->mat[raw+sraw][col+scol].drop) neighbours.push_back(1);
+                            else neighbours.push_back(0);
+                        }
                     }
                     //Move if needed
                     switch(this->mat[raw][col].move(neighbours))
@@ -553,43 +506,21 @@ void Matrix::updatePositions(bool sens)
                 //Look for neighbourhood
                 if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
                 {
-                    std::vector<bool> neighbours;
-                    int sraw, scol;
+                    neighbours = {};
                     for(int i = 0; i<8; i++)
                     {
-                        switch(i)
-                        {
-                            case 0:
-                                sraw = -1;scol = -1;
-                            break;
-                            case 1:
-                                sraw = -1;scol = 0;
-                            break;
-                            case 2:
-                                sraw = -1;scol = 1;
-                            break;
-                            case 3:
-                                sraw = 0;scol = 1;
-                            break;
-                            case 4:
-                                sraw = 1;scol = 1;
-                            break;
-                            case 5:
-                                sraw = 1;scol = 0;
-                            break;
-                            case 6:
-                                sraw = 1;scol = -1;
-                            break;
-                            case 7:
-                                sraw = 0;scol = -1;
-                            break;
-                        }
+                        int sraw = theSwitcher(i, true);
+                        int scol = theSwitcher(i, false);
                         //Boundary neighboors (nothing goes out)
-                        if((raw+sraw)<0) neighbours.push_back(true);
-                        else if((raw+sraw)>=this->height) neighbours.push_back(true);
-                        else if ((col+scol)<0) neighbours.push_back(true);
-                        else if((col+scol)>=this->width) neighbours.push_back(true);
-                        else neighbours.push_back(this->mat[raw+sraw][col+scol].drop);
+                        if((raw+sraw)<0) neighbours.push_back(1);
+                        else if((raw+sraw)>=this->height) neighbours.push_back(1);
+                        else if ((col+scol)<0) neighbours.push_back(1);
+                        else if((col+scol)>=this->width) neighbours.push_back(1);
+                        else
+                        {
+                            if(this->mat[raw+sraw][col+scol].drop) neighbours.push_back(1);
+                            else neighbours.push_back(0);
+                        }
                     }
                     //Move if needed
                     switch(this->mat[raw][col].move(neighbours))
@@ -641,7 +572,7 @@ void Matrix::updatePositions(bool sens)
  */
 void Matrix::resetMoved()
 {
-    float k = 0;
+    int k = 0;
     for(int raw = 0; raw<this->height; raw++)
     {
         for(int col = 0; col<this->width; col++)
@@ -651,7 +582,7 @@ void Matrix::resetMoved()
             k += this->mat[raw][col].strenght();
         }
     }
-    std::cout << k;
+    //std::cout << k;
 }
 
 /**

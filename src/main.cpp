@@ -9,10 +9,10 @@ int main()
     int height = 29;
     srand(time(NULL));
     Coord drop;
-    Reader r("hello");
-    drop.raw = 1;
-    drop.col = int(r.titleSize.width/2);
-    Matrix m(height, r.titleSize.width, drop, height-0);
+    Reader r("Hello");
+    drop.raw = 0;
+    drop.col = floor(r.titleSize.width/2);
+    Matrix m(height, r.titleSize.width, drop, height-5);
     Display d(height, r.titleSize.width, r.text);
     bool t = true;
     while(1)
