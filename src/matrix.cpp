@@ -190,15 +190,14 @@ void Matter::pfd(float wallLoss, float timeLoss, char wall = 'n')
  */
 int Matter::move(std::vector<int> b)
 {
-    int k = this->giveDir;
-    if(this->give[k] == 0) return -1;
-    if(!b[k]) return k;//Priority to the major direction
-    else if(b[(k-1)%8] && b[(k+1)%8]) return -1;//If nothing stay here
-    else if((!b[(k-1)%8]) && (!b[(k+1)%8])) return (k - 1 + 2*(rand()%2))%8;//Randomly go right or left
+    if(this->give[this->giveDir] == 0) return -1;
+    if(!b[this->giveDir]) return this->giveDir;//Priority to the major direction
+    else if(b[(this->giveDir-1)%8] && b[(this->giveDir+1)%8]) return -1;//If nothing stay here
+    else if((!b[(this->giveDir-1)%8]) && (!b[(this->giveDir+1)%8])) return (this->giveDir - 1 + 2*(rand()%2))%8;//Randomly go right or left
     else
     {
-        if(!b[(k-1)%8]) return (k-1)%8;
-        else return (k+1)%8;
+        if(!b[(this->giveDir-1)%8]) return (this->giveDir-1)%8;
+        else return (this->giveDir+1)%8;
     }
 }
 
@@ -300,22 +299,27 @@ Matrix::~Matrix()
  */
 void Matrix::animate(int time, bool t)
 {
+    float transmission = 0.9;//Energy given to the others
+    float loss = 0.1;//Loss energy at each collision
+    float wallLoss = 1;//Loss at each wall collision
+    float fluidTension = 0.4;//Percentage of follow up
+    float timeLoss = 0;//Loss at each step
     for(int i = 0; i<=time; i++)
     {
         //std::cout << "1";
-        updateTransmission(0.8, 0);//Update external forces from gives
+        updateTransmission(transmission, loss);//Update external forces from gives
         //std::cout << "2";
         resetGive();//No direction for now
         //std::cout << "3";
-        updateGives(0.5, 0);//Update movement direction
+        updateGives(wallLoss, timeLoss);//Update movement direction
         //std::cout << "4";
         resetReceive();//Say forces will be reevaluated
         //std::cout << "5";
-        updateTension(0.6);//Update internal fluid tensions
+        updateTension(fluidTension);//Update internal fluid tensions
         //std::cout << "6";
         resetGive();//No direction for now
         //std::cout << "7";
-        updateGives(0.5, 0);//Update movement direction
+        updateGives(wallLoss, timeLoss);//Update movement direction
         //std::cout << "8";
         resetReceive();//Say forces will be reevaluated
         //std::cout << "9";
@@ -362,7 +366,7 @@ void Matrix::updateTransmission(float transmission, float loss)
                         //receive with loss
                         this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
                         //cancel force + bounce (1 +1-tr)
-                        this->mat[raw][col].receive[i] += (2-transmission - loss)*this->mat[raw][col].give[i];
+                        this->mat[raw][col].receive[i] += this->mat[raw][col].give[i];
                     }
                 }
             }
@@ -582,7 +586,7 @@ void Matrix::resetMoved()
             k += this->mat[raw][col].strenght();
         }
     }
-    //std::cout << k;
+    std::cout << k;
 }
 
 /**
