@@ -105,10 +105,38 @@ void Matter::pfd(float wallLoss, float timeLoss, char wall = 'n')
 {
     //Add force received from each direction
     float epsilon = 1e-3;
+    float x, y;
     for(int i = 0; i<8; i++)
     {
-        this->force.x += this->receive[i]*theSwitcher(i, true);
-        this->force.y += this->receive[i]*theSwitcher(i, false);
+        switch(i)
+    {
+        case 0:
+            x = -1/sqrt(2);y = -1/sqrt(2);
+        break;
+        case 1:
+            x = -1;y = 0;
+        break;
+        case 2:
+            x = -1/sqrt(2);y = 1/sqrt(2);
+        break;
+        case 3:
+            x = 0;y = 1;
+        break;
+        case 4:
+            x = 1/sqrt(2);y = 1/sqrt(2);
+        break;
+        case 5:
+            x = 1;y = 0;
+        break;
+        case 6:
+            x = 1/sqrt(2);y = -1/sqrt(2);
+        break;
+        case 7:
+            x = 0;y = -1;
+        break;
+    }
+        this->force.x += this->receive[i]*x;
+        this->force.y += this->receive[i]*y;
     }
     //Avoid quasi null force movement and apply timeLoss
     if(abs(this->force.x) < epsilon) this->force.x = 0;
@@ -179,7 +207,9 @@ void Matter::pfd(float wallLoss, float timeLoss, char wall = 'n')
         break;
     }
     //Translate into a given force
-    for(int i = -1; i<2; i++) this->give[(this->giveDir+i)%8] = (2-abs(i)) * this->strenght()/4;
+    this->give[(this->giveDir-1)%8] = this->strenght()/(2*sqrt(2));
+    this->give[this->giveDir] = this->strenght()/2;
+    this->give[(this->giveDir+1)%8] = this->strenght()/(2*sqrt(2));
 }
 
 /**
@@ -248,14 +278,14 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
             if((raw==cd.raw)&&(col==cd.col)) 
             {
                 Matter p(true);
-                //p.weight = 30;//Drop weight
+                //p.weight = 10;//Drop weight
                 //p.force.y += 60;
                 v.push_back(p);
             }
            else if((raw==cd.raw)&&(col==(cd.col+1))) 
             {
                 Matter p(true);
-                //p.weight = 30;//Drop weight
+                //p.weight = 10;//Drop weight
                 //p.force.y += 60;
                 v.push_back(p);
             }
@@ -299,10 +329,10 @@ Matrix::~Matrix()
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 0.9;//Energy given to the others
-    float loss = 0.1;//Loss energy at each collision
-    float wallLoss = 1;//Loss at each wall collision
-    float fluidTension = 0.4;//Percentage of follow up
+    float transmission = 1;//Energy given to the others
+    float loss = 0;//Loss energy at each collision
+    float wallLoss = 0;//Loss at each wall collision
+    float fluidTension = 0;//Percentage of follow up
     float timeLoss = 0;//Loss at each step
     for(int i = 0; i<=time; i++)
     {
@@ -362,11 +392,16 @@ void Matrix::updateTransmission(float transmission, float loss)
                     else if(this->mat[raw+sraw][col+scol].drop)
                     {
                         //Counter reaction
-                        if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight;
+                        if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/2;
+                        else if(abs(5-i)==1) this->mat[raw][col].receive[5] += this->mat[raw][col].weight/4;
                         //receive with loss
                         this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
                         //cancel force + bounce (1 +1-tr)
-                        this->mat[raw][col].receive[i] += this->mat[raw][col].give[i];
+                        if(this->mat[raw][col].give[i])
+                        {
+                            if(sraw) this->mat[raw][col].force.x *= 1-transmission;
+                            if (scol) this->mat[raw][col].force.y *= 1-transmission;
+                        }
                     }
                 }
             }
