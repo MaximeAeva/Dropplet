@@ -14,7 +14,7 @@ class Display{
     public:
         Display(int h, int w, std::vector<std::string> t);
         ~Display();
-        void show(Matrix m, int clingTime = 500);
+        void show(Matrix m, int nj, int clingTime = 500);
 
     private:
         int height;

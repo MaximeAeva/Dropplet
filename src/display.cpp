@@ -14,7 +14,7 @@ Display::~Display()
 
 }
 
-void Display::show(Matrix m, int clingTime)
+void Display::show(Matrix m, int nj, int clingTime)
 {
     int border = 15;
     std::cout << "\033[2J";
@@ -38,12 +38,37 @@ void Display::show(Matrix m, int clingTime)
         std::cout << "|" << std::endl;
         SetConsoleTextAttribute(hConsole, 15);
     }
-    
-    std::cout << "+";
-    for(int col = 0; col < this->width; col++)
+    int perc = 100*m.totalStrenght()/nj;
+    if(perc > 100) perc = 100;
+    SetConsoleTextAttribute(hConsole, 11);
+    std::cout << perc << "%";
+    SetConsoleTextAttribute(hConsole, 15);
+    int first = 1;
+    if(perc >= 10)
     {
-        std::cout << "=";
+        if(perc >=100) first += 2;
+        else first += 1;
     }
+    int step = perc * this->width / 100;
+    for(int col = first; col < this->width; col++)
+    {
+        if(col < step) 
+        {
+            SetConsoleTextAttribute(hConsole, 3);
+            std::cout << "=";
+        }
+        else if(col == step)
+        {
+            SetConsoleTextAttribute(hConsole, 3);
+            std::cout << ">";
+        }
+        else 
+        {
+            SetConsoleTextAttribute(hConsole, 15);
+            std::cout << "-";
+        }
+    }
+    SetConsoleTextAttribute(hConsole, 15);
     std::cout << "+" << std::endl;
     for(int raw = 0; raw < this->height; raw++)
     {
@@ -54,7 +79,7 @@ void Display::show(Matrix m, int clingTime)
         {
             if(m.mat[raw][col].drop) 
             {
-                int s = int(m.mat[raw][col].strenght()/5);
+                int s = int(m.mat[raw][col].strenght());
                 switch(s)
                 {
                     case 0:

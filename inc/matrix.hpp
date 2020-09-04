@@ -31,7 +31,7 @@ class Matter{
         int move(std::vector<int> b);//Where do I go ?
         void reverseForce(char typ, float coeff = 0.8);
         void bye();
-        inline float strenght(){return sqrt(pow(this->force.x, 2)+pow(this->force.y, 2));}
+        inline float strenght(){return sqrt(pow(this->force.x, 2)+pow(this->force.y, 2));};
         void hello(Matter m);
         int weight;
         int giveDir;
@@ -51,6 +51,8 @@ class Matrix{
         ~Matrix();
        std::vector<std::vector<Matter> > mat;
        void animate(int time, bool t);
+       inline int njMax(int dropPound, int wtrLvl, int drop8) {return dropPound*(drop8-wtrLvl);};
+       int totalStrenght();
 
     private:
         void updateTransmission(float transmission, float loss);

@@ -206,10 +206,8 @@ void Matter::pfd(float wallLoss, float timeLoss, char wall = 'n')
             this->giveDir = 7;
         break;
     }
-    //Translate into a given force
-    this->give[(this->giveDir-1)%8] = this->strenght()/(2*sqrt(2));
-    this->give[this->giveDir] = this->strenght()/2;
-    this->give[(this->giveDir+1)%8] = this->strenght()/(2*sqrt(2));
+    //Translate into a given force (cos(pi/4))
+    for(int i = -1; i < 2; i++) this->give[(this->giveDir + i)%8] = (2-abs(i))*this->strenght()/4;
 }
 
 /**
@@ -279,14 +277,14 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
             {
                 Matter p(true);
                 //p.weight = 10;//Drop weight
-                //p.force.y += 60;
+                //p.force.y += 20;
                 v.push_back(p);
             }
            else if((raw==cd.raw)&&(col==(cd.col+1))) 
             {
                 Matter p(true);
                 //p.weight = 10;//Drop weight
-                //p.force.y += 60;
+                //p.force.y += 20;
                 v.push_back(p);
             }
             else if(raw >= waterLvl) 
@@ -329,10 +327,10 @@ Matrix::~Matrix()
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 1;//Energy given to the others
+    float transmission = 0.8;//Energy given to the others
     float loss = 0;//Loss energy at each collision
-    float wallLoss = 0;//Loss at each wall collision
-    float fluidTension = 0;//Percentage of follow up
+    float wallLoss = 0.2;//Loss at each wall collision
+    float fluidTension = 0.3;//Percentage of follow up
     float timeLoss = 0;//Loss at each step
     for(int i = 0; i<=time; i++)
     {
@@ -375,8 +373,11 @@ void Matrix::updateTransmission(float transmission, float loss)
         {
             if(this->mat[raw][col].drop)//If a drop, look forces around
             {
+                float initx = this->mat[raw][col].force.x;
+                float inity = this->mat[raw][col].force.y;
+                float initf = this->mat[raw][col].strenght();
                 for(int i = 0; i<8; i++)
-                {
+                {  
                     int sraw = theSwitcher(i, true);
                     int scol = theSwitcher(i, false);
 
@@ -386,21 +387,23 @@ void Matrix::updateTransmission(float transmission, float loss)
                     if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width)
                     {   
                         //Counter reaction
-                        if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight;
+                        if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/2;
+                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/(2*sqrt(2));
                     }
                     //Interaction force
                     else if(this->mat[raw+sraw][col+scol].drop)
                     {
                         //Counter reaction
                         if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/2;
-                        else if(abs(5-i)==1) this->mat[raw][col].receive[5] += this->mat[raw][col].weight/4;
-                        //receive with loss
+                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/(2*sqrt(2));
+                        
+                        //Receive
                         this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
-                        //cancel force + bounce (1 +1-tr)
-                        if(this->mat[raw][col].give[i])
+                        //Give
+                        if(initf)
                         {
-                            if(sraw) this->mat[raw][col].force.x *= 1-transmission;
-                            if (scol) this->mat[raw][col].force.y *= 1-transmission;
+                            this->mat[raw][col].force.x -= (2-transmission)*this->mat[raw][col].give[i]*initx/initf;
+                            this->mat[raw][col].force.y -= (2-transmission)*this->mat[raw][col].give[i]*inity/initf;
                         }
                     }
                 }
@@ -611,17 +614,14 @@ void Matrix::updatePositions(bool sens)
  */
 void Matrix::resetMoved()
 {
-    int k = 0;
     for(int raw = 0; raw<this->height; raw++)
     {
         for(int col = 0; col<this->width; col++)
         {
             if(this->mat[raw][col].drop) 
-                this->mat[raw][col].moved = false;
-            k += this->mat[raw][col].strenght();
+                this->mat[raw][col].moved = false; 
         }
     }
-    std::cout << k;
 }
 
 /**
@@ -654,4 +654,18 @@ void Matrix::resetGive()
                 for(int i = 0; i<8; i++) this->mat[raw][col].give[i] = 0;
         }
     }
+}
+
+int Matrix::totalStrenght()
+{
+    int k = 0;
+    for(int raw = 0; raw<this->height; raw++)
+    {
+        for(int col = 0; col<this->width; col++)
+        {
+            if(this->mat[raw][col].drop) 
+                k += this->mat[raw][col].strenght();
+        }
+    }
+    return k;
 }
