@@ -7,13 +7,14 @@
 int main()
 {
     int height = 29;
+    int waterLvl = 2;
     srand(time(NULL));
     Coord drop;
-    Reader r("hello world");
+    Reader r("Dada");
     drop.raw = 0;
     drop.col = floor(r.titleSize.width/2);
-    Matrix m(height, r.titleSize.width, drop, height-2);
-    int nj = m.njMax(2, 2, height-drop.raw-1);
+    Matrix m(height, r.titleSize.width, drop, height-waterLvl);
+    int nj = m.njMax(2, waterLvl, height-drop.raw-1);
     Display d(height, r.titleSize.width, r.text);
     bool t = true;
     while(1)

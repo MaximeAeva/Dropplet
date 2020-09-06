@@ -329,8 +329,8 @@ void Matrix::animate(int time, bool t)
 {
     float transmission = 0.8;//Energy given to the others
     float loss = 0;//Loss energy at each collision
-    float wallLoss = 0.2;//Loss at each wall collision
-    float fluidTension = 0.3;//Percentage of follow up
+    float wallLoss = 0;//Loss at each wall collision
+    float fluidTension = 0;//Percentage of follow up
     float timeLoss = 0;//Loss at each step
     for(int i = 0; i<=time; i++)
     {
@@ -388,14 +388,14 @@ void Matrix::updateTransmission(float transmission, float loss)
                     {   
                         //Counter reaction
                         if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/2;
-                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/(2*sqrt(2));
+                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/4;
                     }
                     //Interaction force
                     else if(this->mat[raw+sraw][col+scol].drop)
                     {
                         //Counter reaction
                         if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/2;
-                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/(2*sqrt(2));
+                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/4;
                         
                         //Receive
                         this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
