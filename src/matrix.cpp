@@ -388,14 +388,14 @@ void Matrix::updateTransmission(float transmission, float loss)
                     {   
                         //Counter reaction
                         if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/2;
-                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/(2*sqrt(2));
+                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/4;
                     }
                     //Interaction force
                     else if(this->mat[raw+sraw][col+scol].drop)
                     {
                         //Counter reaction
                         if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/2;
-                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/(2*sqrt(2));
+                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/4;
                         
                         //Receive
                         this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
