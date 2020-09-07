@@ -27,9 +27,9 @@ class Matter{
         ~Matter();
         bool drop = false;//is it a water drop?
         bool moved = false;//Has it moved ?
-        void pfd(float wallLoss, float timeLoss, char wall);//Dynamic fundamental principe
+        void pfd(float wallLoss, float timeLoss, int wall);//Dynamic fundamental principe
         int move(std::vector<int> b);//Where do I go ?
-        void reverseForce(char typ, float coeff = 0.8);
+        void reverseForce(int typ, float coeff = 0.8);
         void bye();
         inline float strenght(){return sqrt(pow(this->force.x, 2)+pow(this->force.y, 2));};
         void hello(Matter m);

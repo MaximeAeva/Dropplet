@@ -101,7 +101,7 @@ void Matter::hello(Matter m)
  * @param wallLoss Loss against a wall
  * @param wall Where is the wall
  */
-void Matter::pfd(float wallLoss, float timeLoss, char wall = 'n')
+void Matter::pfd(float wallLoss, float timeLoss, int wall = 0)
 {
     //Add force received from each direction
     float epsilon = 1e-3;
@@ -109,42 +109,52 @@ void Matter::pfd(float wallLoss, float timeLoss, char wall = 'n')
     for(int i = 0; i<8; i++)
     {
         switch(i)
-    {
-        case 0:
-            x = -1/sqrt(2);y = -1/sqrt(2);
-        break;
-        case 1:
-            x = -1;y = 0;
-        break;
-        case 2:
-            x = -1/sqrt(2);y = 1/sqrt(2);
-        break;
-        case 3:
-            x = 0;y = 1;
-        break;
-        case 4:
-            x = 1/sqrt(2);y = 1/sqrt(2);
-        break;
-        case 5:
-            x = 1;y = 0;
-        break;
-        case 6:
-            x = 1/sqrt(2);y = -1/sqrt(2);
-        break;
-        case 7:
-            x = 0;y = -1;
-        break;
-    }
+        {
+            case 0:
+                x = -1/sqrt(2);
+                y = -1/sqrt(2);
+            break;
+            case 1:
+                x = -1;
+                y = 0;
+            break;
+            case 2:
+                x = -1/sqrt(2);
+                y = 1/sqrt(2);
+            break;
+            case 3:
+                x = 0;
+                y = 1;
+            break;
+            case 4:
+                x = 1/sqrt(2);
+                y = 1/sqrt(2);
+            break;
+            case 5:
+                x = 1;
+                y = 0;
+            break;
+            case 6:
+                x = 1/sqrt(2);
+                y = -1/sqrt(2);
+            break;
+            case 7:
+                x = 0;
+                y = -1;
+            break;
+        }
         this->force.x += this->receive[i]*x;
         this->force.y += this->receive[i]*y;
+        if(this->strenght()) std::cout <<"i: " << i <<", "<<force.x<<";"<<force.y;
     }
+    std::cout << std::endl;
     //Avoid quasi null force movement and apply timeLoss
     if(abs(this->force.x) < epsilon) this->force.x = 0;
     else this->force.x *= 1-timeLoss;
     if(abs(this->force.y) < epsilon) this->force.y = 0;
     else this->force.y *= 1-timeLoss;
     //Reverse if directed against a wall
-    if(wall !='n') this->reverseForce(wall, 1-wallLoss);
+    if(wall) this->reverseForce(wall, 1-wallLoss);
     //Compute force angle to know the movement direction
     int angle;
     if((this->force.x == 0) && (this->force.y == 0)) angle = 0;
@@ -235,21 +245,53 @@ int Matter::move(std::vector<int> b)
  * @param typ Where is the wall (u->up,r->right,b->bottom,l->left) 
  * @param c Coefficient of transmission
  */
-void Matter::reverseForce(char typ, float c)
+void Matter::reverseForce(int typ, float c)
 {
     switch(typ)
     {
-        case 'u':
-            if(this->force.x>0) this->force.x *= -c;
+        case 1:
+            if(this->force.x>0) 
+            {
+                this->force.x *= -c;
+                this->force.y *= c;
+            }
         break;
-        case 'l':
+        case 10:
+            if(this->force.y<0)
+            {
+                this->force.y *= -c;
+                this->force.x *= c;
+            } 
+        break;
+        case 20:
+            if(this->force.y>0)
+            {
+                this->force.y *= -c;
+                this->force.x *= c;
+            } 
+        break;
+        case 2:
+            if(this->force.x<0) 
+            {
+                this->force.x *= -c;
+                this->force.y *= c;
+            }
+        break;
+        case 11:
+            if(this->force.x>0) this->force.x *= -c;
             if(this->force.y<0) this->force.y *= -c;
         break;
-        case 'r':
+        case 21:
+            if(this->force.x>0) this->force.x *= -c;
             if(this->force.y>0) this->force.y *= -c;
         break;
-        case 'b':
+        case 12:
             if(this->force.x<0) this->force.x *= -c;
+            if(this->force.y<0) this->force.y *= -c;
+        break;
+        case 22:
+            if(this->force.x<0) this->force.x *= -c;
+            if(this->force.y>0) this->force.y *= -c;
         break;
     }
 }
@@ -327,7 +369,7 @@ Matrix::~Matrix()
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 0.8;//Energy given to the others
+    float transmission = 1;//Energy given to the others
     float loss = 0;//Loss energy at each collision
     float wallLoss = 0;//Loss at each wall collision
     float fluidTension = 0;//Percentage of follow up
@@ -343,11 +385,11 @@ void Matrix::animate(int time, bool t)
         //std::cout << "4";
         resetReceive();//Say forces will be reevaluated
         //std::cout << "5";
-        updateTension(fluidTension);//Update internal fluid tensions
+        //updateTension(fluidTension);//Update internal fluid tensions
         //std::cout << "6";
-        resetGive();//No direction for now
+        //resetGive();//No direction for now
         //std::cout << "7";
-        updateGives(wallLoss, timeLoss);//Update movement direction
+        //updateGives(wallLoss, timeLoss);//Update movement direction
         //std::cout << "8";
         resetReceive();//Say forces will be reevaluated
         //std::cout << "9";
@@ -355,6 +397,7 @@ void Matrix::animate(int time, bool t)
         //std::cout << "10";
         resetMoved();//Say each cell is movable
         //std::cout << std::endl;
+        std::cout << this->totalStrenght();
     }
 }
 
@@ -371,40 +414,39 @@ void Matrix::updateTransmission(float transmission, float loss)
     {
         for(int col = 0; col<this->width; col++)
         {
-            if(this->mat[raw][col].drop)//If a drop, look forces around
+            if(this->mat[raw][col].drop && !this->mat[raw][col].moved)//If a drop, look forces around
             {
                 float initx = this->mat[raw][col].force.x;
                 float inity = this->mat[raw][col].force.y;
                 float initf = this->mat[raw][col].strenght();
+                this->mat[raw][col].receive[1] += this->mat[raw][col].weight;
                 for(int i = 0; i<8; i++)
                 {  
                     int sraw = theSwitcher(i, true);
                     int scol = theSwitcher(i, false);
-
-                    if(i==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight;
 
                     //Bound
                     if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width)
                     {   
                         //Counter reaction
                         if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/2;
-                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/4;
+                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/(2*sqrt(2));
                     }
                     //Interaction force
                     else if(this->mat[raw+sraw][col+scol].drop)
                     {
                         //Counter reaction
                         if(i==5) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/2;
-                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/4;
+                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += this->mat[raw][col].weight/(2*sqrt(2));
                         
-                        //Receive
+                        /*//Receive
                         this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
                         //Give
                         if(initf)
                         {
                             this->mat[raw][col].force.x -= (2-transmission)*this->mat[raw][col].give[i]*initx/initf;
                             this->mat[raw][col].force.y -= (2-transmission)*this->mat[raw][col].give[i]*inity/initf;
-                        }
+                        }*/
                     }
                 }
             }
@@ -423,7 +465,7 @@ void Matrix::updateTension(float fluidTension)
     {
         for(int col = 0; col<this->width; col++)
         {
-            if(this->mat[raw][col].drop)//If a drop, look forces around
+            if(this->mat[raw][col].drop && !this->mat[raw][col].moved)//If a drop, look forces around
             {
                 for(int i = 0; i<8; i++)
                 {
@@ -432,10 +474,10 @@ void Matrix::updateTension(float fluidTension)
                     if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width){}
                     else if(this->mat[raw+sraw][col+scol].drop)
                     {
-                        //Internal fluid tension
+                        /*//Internal fluid tension
                         this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
                         //Internal fluid loss
-                        this->mat[raw+sraw][col+scol].receive[i] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
+                        this->mat[raw+sraw][col+scol].receive[i] += fluidTension*this->mat[raw+sraw][col+scol].give[i];*/
                     }
                 }
             }
@@ -455,13 +497,13 @@ void Matrix::updateGives(float wallLoss, float timeLoss)
     {
         for(int col = 0; col<this->width; col++)
         {
-            if(this->mat[raw][col].drop) 
+            if(this->mat[raw][col].drop && !this->mat[raw][col].moved) 
             {
-                char wall = 'n';
-                if((raw-1)<0) wall = 'u';
-                else if((raw+1)>=this->height) wall = 'b';
-                if((col-1)<0) wall = 'l';
-                else if((col+1)>=this->width) wall = 'r';
+                int wall = 0;
+                if((raw-1)<0) wall += 1;
+                else if((raw+1)>=this->height) wall += 2;
+                if((col-1)<0) wall += 10;
+                else if((col+1)>=this->width) wall += 20;
                 this->mat[raw][col].pfd(wallLoss, timeLoss, wall);
             }
         }
@@ -656,6 +698,11 @@ void Matrix::resetGive()
     }
 }
 
+/**
+ * @brief Sum of norms
+ * 
+ * @return int 
+ */
 int Matrix::totalStrenght()
 {
     int k = 0;

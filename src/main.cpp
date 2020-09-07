@@ -6,12 +6,17 @@
 
 int main()
 {
-    int height = 29;
-    int waterLvl = 2;
+    int height = 29;//Display height
+    int waterLvl = 1;//Water level
+    int drop8 = 9;//Drop height
+    std::string s = "oooo";//Message
+    
+    /*######################## ... ########################*/
+
     srand(time(NULL));
     Coord drop;
-    Reader r("Dada");
-    drop.raw = 0;
+    Reader r(s);
+    drop.raw = height-drop8-1;
     drop.col = floor(r.titleSize.width/2);
     Matrix m(height, r.titleSize.width, drop, height-waterLvl);
     int nj = m.njMax(2, waterLvl, height-drop.raw-1);
