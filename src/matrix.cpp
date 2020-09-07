@@ -329,8 +329,8 @@ void Matrix::animate(int time, bool t)
 {
     float transmission = 0.8;//Energy given to the others
     float loss = 0;//Loss energy at each collision
-    float wallLoss = 0.2;//Loss at each wall collision
-    float fluidTension = 0.3;//Percentage of follow up
+    float wallLoss = 0;//Loss at each wall collision
+    float fluidTension = 0;//Percentage of follow up
     float timeLoss = 0;//Loss at each step
     for(int i = 0; i<=time; i++)
     {
