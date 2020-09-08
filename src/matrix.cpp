@@ -215,19 +215,9 @@ void Matter::pfd(float wallLoss, float timeLoss, int wall = 0)
         break;
     }
     //Translate into a given force (cos(pi/4))
-    if((this->giveDir%2)==1)
-    {
-        this->give[this->giveDir] = this->strenght()/2.0;
-        this->give[(this->giveDir+1)%8] = this->strenght()/(2*sqrt(2));
-        this->give[(this->giveDir-1)%8] = this->strenght()/(2*sqrt(2));
-    }
-    else
-    {
-        this->give[this->giveDir] = (this->strenght()*sqrt(2))/(1+sqrt(2));
-        this->give[(this->giveDir+1)%8] = this->strenght()/(2+sqrt(2));
-        this->give[(this->giveDir-1)%8] = this->strenght()/(2+sqrt(2));
-    }
-    
+    this->give[this->giveDir] = this->strenght()/2.0;
+    this->give[(this->giveDir+1)%8] = this->strenght()/(2*sqrt(2));
+    this->give[(this->giveDir-1)%8] = this->strenght()/(2*sqrt(2));
 }
 
 /**
@@ -380,21 +370,21 @@ Matrix::~Matrix()
 void Matrix::animate(int time, bool t)
 {
     float transmission = 1;//Energy given to the others
-    float gravity = 1;
+    float gravity = 1;//Force in g
+    float fluidTension = 0;//Percentage of follow up
     float loss = 0;//Loss energy at each collision
     float wallLoss = 0;//Loss at each wall collision
-    float fluidTension = 0;//Percentage of follow up
     float timeLoss = 0;//Loss at each step
-    
+
     for(int i = 0; i<=time; i++)
     {
         //std::cout << "1";
-        Gravity(gravity);
+        Gravity(gravity);//Make them fall
         updateGives(wallLoss, timeLoss);
         Transmission(transmission, loss);//Update external forces from gives
         updateGives(wallLoss, timeLoss);//Update movement direction
-        Tension(fluidTension);//Update internal fluid tensions
-        updateGives(wallLoss, timeLoss);//Update movement direction
+        //Tension(fluidTension);//Update internal fluid tensions
+        //updateGives(wallLoss, timeLoss);//Update movement direction
         updatePositions(t);//Update positions
         std::cout << this->totalStrenght();
     }
@@ -462,14 +452,20 @@ void Matrix::Transmission(float transmission, float loss)
                 {  
                     int sraw = theSwitcher(i, true);
                     int scol = theSwitcher(i, false);
-                    if(this->mat[raw+sraw][col+scol].drop)
+                    if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width){}
+                    else if(this->mat[raw+sraw][col+scol].drop)
                     {
+                        float k;
+                        if(((i+4)%8)==this->mat[raw+sraw][col+scol].giveDir) k=1;
+                        else k = 1/sqrt(2);
                         //Receive
-                        this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                        this->mat[raw][col].receive[i] += transmission*k*this->mat[raw+sraw][col+scol].give[(i+4)%8];
                         //Give
-                        this->mat[raw][col].receive[i] += (2-transmission)*this->mat[raw][col].give[i];
+                        this->mat[raw][col].receive[i] += transmission*this->mat[raw][col].give[i];
                     }
                 }
+                //for(int i = 0; i<8; i++) std::cout << this->mat[raw][col].receive[i] << ",";
+                //std::cout << std::endl;
             }
         }       
     }
