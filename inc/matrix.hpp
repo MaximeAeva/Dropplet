@@ -55,10 +55,11 @@ class Matrix{
        int totalStrenght();
 
     private:
-        void updateTransmission(float transmission, float loss);
+        void Transmission(float transmission, float loss);
+        void Tension(float fluidTension);
+        void Gravity(float force);
         void updatePositions(bool sens);
         void updateGives(float wallLoss, float timeLoss);
-        void updateTension(float fluidTension);
         void resetMoved();
         void resetReceive();
         void resetGive();
