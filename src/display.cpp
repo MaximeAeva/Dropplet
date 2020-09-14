@@ -83,7 +83,7 @@ void Display::show(Matrix m, int nj, int clingTime)
         {
             if(m.mat[raw][col].drop) 
             {
-                int s = int(m.mat[raw][col].strenght()/5);
+                int s = int(m.mat[raw][col].strenght());
                 switch(s)
                 {
                     case 0:

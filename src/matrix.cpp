@@ -456,6 +456,7 @@ void Matrix::Transmission(float transmission, float loss)
                     else if(this->mat[raw+sraw][col+scol].drop)
                     {
                         float k;
+                        //Keep the norm
                         if(((i+4)%8)==this->mat[raw+sraw][col+scol].giveDir) k=1;
                         else k = 1/sqrt(2);
                         //Receive
@@ -538,131 +539,65 @@ void Matrix::updatePositions(bool sens)
     std::vector<int> neighbours;
     for(int raw = 0; raw<this->height; raw++)
     {
-        if(!sens)
+        for(int col = 0; col<this->width; col++)
         {
-            for(int col = this->width-1; col>=0; col--)
+            if(sens) col = this->width-1-col;
+            //Look for neighbourhood
+            if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
             {
-                //Look for neighbourhood
-                if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
+                neighbours = {};
+                for(int i = 0; i<8; i++)
                 {
-                    neighbours = {};
-                    for(int i = 0; i<8; i++)
+                    int sraw = theSwitcher(i, true);
+                    int scol = theSwitcher(i, false);
+                    //Boundary neighboors (nothing goes out)
+                    if((raw+sraw)<0) neighbours.push_back(1);
+                    else if((raw+sraw)>=this->height) neighbours.push_back(1);
+                    else if ((col+scol)<0) neighbours.push_back(1);
+                    else if((col+scol)>=this->width) neighbours.push_back(1);
+                    else
                     {
-                        int sraw = theSwitcher(i, true);
-                        int scol = theSwitcher(i, false);
-                        //Boundary neighboors (nothing goes out)
-                        if((raw+sraw)<0) neighbours.push_back(1);
-                        else if((raw+sraw)>=this->height) neighbours.push_back(1);
-                        else if ((col+scol)<0) neighbours.push_back(1);
-                        else if((col+scol)>=this->width) neighbours.push_back(1);
-                        else
-                        {
-                            if(this->mat[raw+sraw][col+scol].drop) neighbours.push_back(1);
-                            else neighbours.push_back(0);
-                        }
-                    }
-                    //Move if needed
-                    switch(this->mat[raw][col].move(neighbours))
-                    {
-                        case 0:
-                            this->mat[raw-1][col-1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 1:
-                            this->mat[raw-1][col].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 2:
-                            this->mat[raw-1][col+1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 3:
-                            this->mat[raw][col+1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 4:
-                            this->mat[raw+1][col+1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 5:
-                            this->mat[raw+1][col].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 6:
-                            this->mat[raw+1][col-1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 7:
-                            this->mat[raw][col-1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        default:
-                        break;
+                        if(this->mat[raw+sraw][col+scol].drop) neighbours.push_back(1);
+                        else neighbours.push_back(0);
                     }
                 }
-            }
-        }
-        else
-        {
-            for(int col = 0; col<this->width; col++)
-            {
-                //Look for neighbourhood
-                if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
+                //Move if needed
+                switch(this->mat[raw][col].move(neighbours))
                 {
-                    neighbours = {};
-                    for(int i = 0; i<8; i++)
-                    {
-                        int sraw = theSwitcher(i, true);
-                        int scol = theSwitcher(i, false);
-                        //Boundary neighboors (nothing goes out)
-                        if((raw+sraw)<0) neighbours.push_back(1);
-                        else if((raw+sraw)>=this->height) neighbours.push_back(1);
-                        else if ((col+scol)<0) neighbours.push_back(1);
-                        else if((col+scol)>=this->width) neighbours.push_back(1);
-                        else
-                        {
-                            if(this->mat[raw+sraw][col+scol].drop) neighbours.push_back(1);
-                            else neighbours.push_back(0);
-                        }
-                    }
-                    //Move if needed
-                    switch(this->mat[raw][col].move(neighbours))
-                    {
-                        case 0:
-                            this->mat[raw-1][col-1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 1:
-                            this->mat[raw-1][col].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 2:
-                            this->mat[raw-1][col+1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 3:
-                            this->mat[raw][col+1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 4:
-                            this->mat[raw+1][col+1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 5:
-                            this->mat[raw+1][col].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 6:
-                            this->mat[raw+1][col-1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        case 7:
-                            this->mat[raw][col-1].hello(this->mat[raw][col]);
-                            this->mat[raw][col].bye();
-                        break;
-                        default:
-                        break;
-                    }
+                    case 0:
+                        this->mat[raw-1][col-1].hello(this->mat[raw][col]);
+                        this->mat[raw][col].bye();
+                    break;
+                    case 1:
+                        this->mat[raw-1][col].hello(this->mat[raw][col]);
+                        this->mat[raw][col].bye();
+                    break;
+                    case 2:
+                        this->mat[raw-1][col+1].hello(this->mat[raw][col]);
+                        this->mat[raw][col].bye();
+                    break;
+                    case 3:
+                        this->mat[raw][col+1].hello(this->mat[raw][col]);
+                        this->mat[raw][col].bye();
+                    break;
+                    case 4:
+                        this->mat[raw+1][col+1].hello(this->mat[raw][col]);
+                        this->mat[raw][col].bye();
+                    break;
+                    case 5:
+                        this->mat[raw+1][col].hello(this->mat[raw][col]);
+                        this->mat[raw][col].bye();
+                    break;
+                    case 6:
+                        this->mat[raw+1][col-1].hello(this->mat[raw][col]);
+                        this->mat[raw][col].bye();
+                    break;
+                    case 7:
+                        this->mat[raw][col-1].hello(this->mat[raw][col]);
+                        this->mat[raw][col].bye();
+                    break;
+                    default:
+                    break;
                 }
             }
         }
@@ -683,7 +618,7 @@ void Matrix::resetMoved()
             if(this->mat[raw][col].drop) 
             {
                 this->mat[raw][col].moved = false; 
-                std::cout << this->mat[raw][col].strenght() << " ";
+                //std::cout << this->mat[raw][col].strenght() << " ";
             }
 
         }
