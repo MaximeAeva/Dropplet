@@ -41,6 +41,8 @@ int theSwitcher(int i, bool raw)
     else return scol;
 } 
 
+//################## Creators #####################
+
 /**
  * @brief A Matrix of matter right here (Construct a new Matrix:: Matrix object)
  * 
@@ -104,34 +106,7 @@ Matrix::~Matrix()
     this->mat = {};
 }
 
-/**
- * @brief Simulation routine
- * 
- * @param time Display speed
- * @param t Parity
- */
-void Matrix::animate(int time, bool t)
-{
-    float transmission = 0;//Energy given to the others
-    float gravity = 1;//Force in g
-    float fluidTension = 0;//Percentage of follow up
-    float loss = 0;//Loss energy at each collision
-    float wallLoss = 0;//Loss at each wall collision
-    float timeLoss = 0;//Loss at each step
-
-    for(int i = 0; i<=time; i++)
-    {
-        //std::cout << "1";
-        Gravity(gravity);//Make them fall
-        updateGives(wallLoss, timeLoss);
-        //Transmission(transmission, loss);//Update external forces from gives
-        //updateGives(wallLoss, timeLoss);//Update movement direction
-        //Tension(fluidTension);//Update internal fluid tensions
-        //updateGives(wallLoss, timeLoss);//Update movement direction
-        updatePositions(t);//Update positions
-        std::cout << this->totalStrenght();
-    }
-}
+//################## Physics #######################
 
 /**
  * @brief Gravity simulation
@@ -246,6 +221,37 @@ void Matrix::Tension(float fluidTension)
     }
 }
 
+//############### Matrix evolution #################
+
+/**
+ * @brief Simulation routine
+ * 
+ * @param time Display speed
+ * @param t Parity
+ */
+void Matrix::animate(int time, bool t)
+{
+    float transmission = 0;//Energy given to the others
+    float gravity = 1;//Force in g
+    float fluidTension = 0;//Percentage of follow up
+    float loss = 0;//Loss energy at each collision
+    float wallLoss = 0;//Loss at each wall collision
+    float timeLoss = 0;//Loss at each step
+
+    for(int i = 0; i<=time; i++)
+    {
+        //std::cout << "1";
+        Gravity(gravity);//Make them fall
+        updateGives(wallLoss, timeLoss);
+        Transmission(transmission, loss);//Update external forces from gives
+        updateGives(wallLoss, timeLoss);//Update movement direction
+        //Tension(fluidTension);//Update internal fluid tensions
+        //updateGives(wallLoss, timeLoss);//Update movement direction
+        updatePositions(t);//Update positions
+        std::cout << this->totalStrenght();
+    }
+}
+
 /**
  * @brief Update forces and set new give
  * 
@@ -282,9 +288,11 @@ void Matrix::updatePositions(bool sens)
     std::vector<int> neighbours;
     for(int raw = 0; raw<this->height; raw++)
     {
-        for(int col = 0; col<this->width; col++)
+        for(int precol = 0; precol<this->width; precol++)
         {
-            if(sens) col = this->width-1-col;
+            int col;
+            if(sens) col = this->width-1-precol;
+            else col = precol;
             //Look for neighbourhood
             if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
             {
@@ -399,6 +407,8 @@ void Matrix::resetGive()
         }
     }
 }
+
+//################## Others ####################
 
 /**
  * @brief Sum of norms
