@@ -9,7 +9,7 @@ int main()
     int height = 8;//Display height
     int waterLvl = 1;//Water level
     int drop8 = 7;//Drop height
-    std::string s = "i";//Message
+    std::string s = "ooo";//Message
     
     /*######################## ... ########################*/
 

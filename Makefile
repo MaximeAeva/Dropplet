@@ -11,7 +11,8 @@ OBJ_DIR =       obj
 PROJ_SRC_LIST = main.cpp \
 				display.cpp \
 				reader.cpp \
-				matrix.cpp
+				matrix.cpp \
+				matter.cpp
 
 # objects
 PROJ_OBJ_LIST = $(PROJ_SRC_LIST:.cpp=.o)
