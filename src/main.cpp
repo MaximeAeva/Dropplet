@@ -7,7 +7,7 @@
 int main()
 {
     int height = 8;//Display height
-    int waterLvl = 1;//Water level
+    int waterLvl = 2;//Water level
     int drop8 = 7;//Drop height
     std::string s = "ooo";//Message
     
@@ -24,7 +24,7 @@ int main()
     bool t = true;
     while(1)
     {
-        d.show(m, nj, 0);//Refresh time can be limit
+        d.show(m, nj, 500);//Refresh time can be limit
         m.animate(0, t);
         if(t) t = false;
         else t = true;

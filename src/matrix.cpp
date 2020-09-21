@@ -163,9 +163,6 @@ void Matrix::Transmission(float transmission, float loss)
         {
             if(this->mat[raw][col].drop && !this->mat[raw][col].moved)//If a drop, look forces around
             {
-                float initx = this->mat[raw][col].force.x;
-                float inity = this->mat[raw][col].force.y;
-                float initf = this->mat[raw][col].strenght();
                 for(int i = 0; i<8; i++)
                 {  
                     int sraw = theSwitcher(i, true);
@@ -176,15 +173,13 @@ void Matrix::Transmission(float transmission, float loss)
                         float k;
                         //Keep the norm
                         if(((i+4)%8)==this->mat[raw+sraw][col+scol].giveDir) k=1;
-                        else k = 1/sqrt(2);
+                        else k = 2*sqrt(2);
                         //Receive
-                        this->mat[raw][col].receive[i] += transmission*k/2.15*this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                        this->mat[raw][col].receive[i] += transmission*k*this->mat[raw+sraw][col+scol].give[(i+4)%8];
                         //Give
-                        this->mat[raw][col].receive[i] += transmission*k/2.15*this->mat[raw][col].give[i];
+                        this->mat[raw][col].receive[i] += transmission*this->mat[raw][col].give[i];
                     }
                 }
-                //for(int i = 0; i<8; i++) std::cout << this->mat[raw][col].receive[i] << ",";
-                //std::cout << std::endl;
             }
         }       
     }
@@ -231,7 +226,7 @@ void Matrix::Tension(float fluidTension)
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 0;//Energy given to the others
+    float transmission = 1;//Energy given to the others
     float gravity = 1;//Force in g
     float fluidTension = 0;//Percentage of follow up
     float loss = 0;//Loss energy at each collision

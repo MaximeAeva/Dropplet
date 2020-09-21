@@ -70,36 +70,36 @@ void Matter::pfd(float wallLoss, float timeLoss, int wall = 0)
         switch(i)
         {
             case 0:
-                x = -1/sqrt(2);
-                y = -1/sqrt(2);
-            break;
-            case 1:
-                x = -1;
-                y = 0;
-            break;
-            case 2:
-                x = -1/sqrt(2);
-                y = 1/sqrt(2);
-            break;
-            case 3:
-                x = 0;
-                y = 1;
-            break;
-            case 4:
                 x = 1/sqrt(2);
                 y = 1/sqrt(2);
             break;
-            case 5:
+            case 1:
                 x = 1;
                 y = 0;
             break;
-            case 6:
+            case 2:
                 x = 1/sqrt(2);
                 y = -1/sqrt(2);
             break;
-            case 7:
+            case 3:
                 x = 0;
                 y = -1;
+            break;
+            case 4:
+                x = -1/sqrt(2);
+                y = -1/sqrt(2);
+            break;
+            case 5:
+                x = -1;
+                y = 0;
+            break;
+            case 6:
+                x = -1/sqrt(2);
+                y = 1/sqrt(2);
+            break;
+            case 7:
+                x = 0;
+                y = 1;
             break;
         }
         this->force.x += this->receive[i]*x;
@@ -115,7 +115,7 @@ void Matter::pfd(float wallLoss, float timeLoss, int wall = 0)
     //Compute force angle to know the movement direction
     int angle;
     if((this->force.x == 0) && (this->force.y == 0)) angle = 0;
-    else angle = floor(atan2(this->force.x, this->force.y)/(3.1415/8));
+    else angle = floor(atan2(-this->force.x, this->force.y)/(3.1415/8));
     switch(angle)
     {
         case -9:
@@ -209,7 +209,7 @@ void Matter::reverseForce(int typ, float c)
     switch(typ)
     {
         case 1:
-            if(this->force.x>0) 
+            if(this->force.x<0) 
             {
                 this->force.x *= -c;
                 this->force.y *= c;
@@ -230,26 +230,26 @@ void Matter::reverseForce(int typ, float c)
             } 
         break;
         case 2:
-            if(this->force.x<0) 
+            if(this->force.x>0) 
             {
                 this->force.x *= -c;
                 this->force.y *= c;
             }
         break;
         case 11:
-            if(this->force.x>0) this->force.x *= -c;
+            if(this->force.x<0) this->force.x *= -c;
             if(this->force.y<0) this->force.y *= -c;
         break;
         case 21:
-            if(this->force.x>0) this->force.x *= -c;
+            if(this->force.x<0) this->force.x *= -c;
             if(this->force.y>0) this->force.y *= -c;
         break;
         case 12:
-            if(this->force.x<0) this->force.x *= -c;
+            if(this->force.x>0) this->force.x *= -c;
             if(this->force.y<0) this->force.y *= -c;
         break;
         case 22:
-            if(this->force.x<0) this->force.x *= -c;
+            if(this->force.x>0) this->force.x *= -c;
             if(this->force.y>0) this->force.y *= -c;
         break;
     }

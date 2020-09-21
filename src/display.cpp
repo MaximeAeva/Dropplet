@@ -44,7 +44,7 @@ void Display::show(Matrix m, int nj, int clingTime)
     if(perc >= 1000) perc = 999;
     if(perc <= 100) SetConsoleTextAttribute(hConsole, 11);
     else SetConsoleTextAttribute(hConsole, 12);
-    std::cout << perc << "%";
+    std::cout << abs(perc) << "%";
     if(perc > 100) perc = 100;
     SetConsoleTextAttribute(hConsole, 15);
     int first = 1;
