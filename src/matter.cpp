@@ -63,7 +63,7 @@ void Matter::hello(Matter m)
 void Matter::pfd(float wallLoss, float timeLoss, int wall = 0)
 {
     //Add force received from each direction
-    float epsilon = 1e-3;
+    float epsilon = 1e-10;
     float x, y;
     for(int i = 0; i<8; i++)
     {

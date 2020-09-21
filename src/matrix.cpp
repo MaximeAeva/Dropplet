@@ -131,7 +131,6 @@ void Matrix::Gravity(float force = 1)
                     if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width)
                     {   
                         //Counter reaction
-                        
                         if(i==5) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/2.0;
                         else if(abs(5-i)==1) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/(2*sqrt(2));
                     }
@@ -173,7 +172,7 @@ void Matrix::Transmission(float transmission, float loss)
                         float k;
                         //Keep the norm
                         if(((i+4)%8)==this->mat[raw+sraw][col+scol].giveDir) k=1;
-                        else k = 2*sqrt(2);
+                        else k = 1;
                         //Receive
                         this->mat[raw][col].receive[i] += transmission*k*this->mat[raw+sraw][col+scol].give[(i+4)%8];
                         //Give
