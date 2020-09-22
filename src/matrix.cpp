@@ -172,7 +172,7 @@ void Matrix::Transmission(float transmission, float loss)
                         float k;
                         //Keep the norm
                         if(((i+4)%8)==this->mat[raw+sraw][col+scol].giveDir) k=1;
-                        else k = 1/(2*sqrt(2));
+                        else k = 1/(sqrt(2));
                         //Receive
                         this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
                         //Give
