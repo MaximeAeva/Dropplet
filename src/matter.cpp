@@ -35,6 +35,7 @@ void Matter::bye()
     this->receive = {};
     this->give = {};
     this->drop = false;
+    this->moved = false;
     this->weight = 0;
     this->force = {0, 0};
 }

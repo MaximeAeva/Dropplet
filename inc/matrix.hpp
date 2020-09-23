@@ -25,7 +25,7 @@ class Matrix{
        std::vector<std::vector<Matter> > mat;
        void animate(int time, bool t);
        inline int njMax(int dropPound, int wtrLvl, int drop8) {return dropPound*(drop8-wtrLvl);};
-       int totalStrenght();
+       float totalStrenght();
 
     private:
         void Transmission(float transmission, float loss);

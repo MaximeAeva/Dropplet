@@ -38,13 +38,13 @@ void Display::show(Matrix m, int nj, int clingTime)
         std::cout << "|" << std::endl;
         SetConsoleTextAttribute(hConsole, 15);
     }
-    int perc;
+    float perc;
     if(nj) perc = 100*m.totalStrenght()/nj;
     else perc = m.totalStrenght();
     if(perc >= 1000) perc = 999;
     if(perc <= 100) SetConsoleTextAttribute(hConsole, 11);
     else SetConsoleTextAttribute(hConsole, 12);
-    std::cout << abs(perc) << "%";
+    std::cout << abs(floor(perc)) << "%";
     if(perc > 100) perc = 100;
     SetConsoleTextAttribute(hConsole, 15);
     int first = 1;

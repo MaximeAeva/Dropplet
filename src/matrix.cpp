@@ -119,7 +119,7 @@ void Matrix::Gravity(float force = 1)
     {
         for(int col = 0; col<this->width; col++)
         {
-            if(this->mat[raw][col].drop && !this->mat[raw][col].moved)//If a drop, look forces around
+            if(this->mat[raw][col].drop && !this->mat[raw][col].moved)
             {
                 this->mat[raw][col].receive[1] += force*this->mat[raw][col].weight;
                 for(int i = 0; i<8; i++)
@@ -131,15 +131,15 @@ void Matrix::Gravity(float force = 1)
                     if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width)
                     {   
                         //Counter reaction
-                        if(i==5) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/2.0;
-                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/(2*sqrt(2));
+                        //if(i==5) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/2.0;
+                        //else if(abs(5-i)==1) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/(2.0*sqrt(2));
                     }
                     //Interaction force
                     else if(this->mat[raw+sraw][col+scol].drop)
                     {
                         //Counter reaction
-                        if(i==5) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/2.0;
-                        else if(abs(5-i)==1) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/(2*sqrt(2));
+                        //if(i==5) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/2.0;
+                        //else if(abs(5-i)==1) this->mat[raw][col].receive[i] += force*this->mat[raw][col].weight/(2.0*sqrt(2));
                     }
                 }
             }
@@ -225,7 +225,7 @@ void Matrix::Tension(float fluidTension)
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 1;//Energy given to the others
+    float transmission = 0.9;//Energy given to the others
     float gravity = 1;//Force in g
     float fluidTension = 0;//Percentage of follow up
     float loss = 0;//Loss energy at each collision
@@ -409,9 +409,9 @@ void Matrix::resetGive()
  * 
  * @return int 
  */
-int Matrix::totalStrenght()
+float Matrix::totalStrenght()
 {
-    int k = 0;
+    float k = 0;
     for(int raw = 0; raw<this->height; raw++)
     {
         for(int col = 0; col<this->width; col++)
