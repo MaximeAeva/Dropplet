@@ -29,6 +29,7 @@ class Matrix{
 
     private:
         void Transmission(float transmission, float loss);
+        void Reaction(float transmission, float loss);
         void Tension(float fluidTension);
         void Gravity(float force);
         void updatePositions(bool sens);

@@ -122,6 +122,11 @@ void Matrix::Gravity(float force = 1)
             if(this->mat[raw][col].drop && !this->mat[raw][col].moved)
             {
                 this->mat[raw][col].receive[1] += force*this->mat[raw][col].weight;
+                for(int i = 0; i<8; i++)
+                {  
+                    int sraw = theSwitcher(i, true);
+                    int scol = theSwitcher(i, false);
+                }
             }
         }       
     }
@@ -135,6 +140,36 @@ void Matrix::Gravity(float force = 1)
  * @param loss vanishing coeff
  */
 void Matrix::Transmission(float transmission, float loss)
+{
+    for(int raw = 0; raw<this->height; raw++)
+    {
+        for(int col = 0; col<this->width; col++)
+        {
+            if(this->mat[raw][col].drop && !this->mat[raw][col].moved)//If a drop, look forces around
+            {
+                for(int i = 0; i<8; i++)
+                {  
+                    int sraw = theSwitcher(i, true);
+                    int scol = theSwitcher(i, false);
+                    if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width){}
+                    else if(this->mat[raw+sraw][col+scol].drop)
+                    {
+                        float k;
+                        //Keep the norm
+                        if(((i+4)%8)==this->mat[raw+sraw][col+scol].giveDir) k=1;
+                        else k = 1/sqrt(2);
+                        //Receive
+                        this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
+                        //Give
+                        this->mat[raw][col].receive[i] += transmission*k*this->mat[raw][col].give[i];
+                    }
+                }
+            }
+        }       
+    }
+}
+
+void Matrix::Reaction(float transmission, float loss)
 {
     for(int raw = 0; raw<this->height; raw++)
     {
