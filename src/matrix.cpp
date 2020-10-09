@@ -51,41 +51,35 @@ int theSwitcher(int i, bool raw)
  * @param cd 
  * @param waterLvl 
  */
-Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
+Matrix::Matrix(int height, int width, Coord cd, int waterLvl, int matterKindDiversity)
 {
     this->height = height;
     this->width = width;
-    for(int raw = 0; raw < height; raw++)
-    {
+    for(int matKd = 0; matKd < matterKindDiversity; matKd++)
+    {  
         std::vector<Matter> v;
-        for(int col = 0; col < width; col++)
-        {
-            if((raw==cd.raw)&&(col==cd.col)) 
+        for(int raw = 0; raw < height; raw++)
+        {   
+            for(int col = 0; col < width; col++)
             {
-                Matter p(true);
-                //p.weight = 10;//Drop weight
-                //p.force.y += 20;
-                v.push_back(p);
-            }
-           else if((raw==cd.raw)&&(col==(cd.col+1))) 
-            {
-                Matter p(true);
-                //p.weight = 10;//Drop weight
-                //p.force.y += 20;
-                v.push_back(p);
-            }
-            else if(raw >= waterLvl) 
-            {
-                Matter p(true);
-                v.push_back(p);
-            }
-            else 
-            {
-                Matter p(false);
-                v.push_back(p);
+                if((raw==cd.raw)&&(col==cd.col)) 
+                {
+                    Matter p(0, 1, 0.5, raw, col, 0, 0, 0, 0);
+                    v.push_back(p);
+                }
+                else if((raw==cd.raw)&&(col==(cd.col+1))) 
+                {
+                    Matter p(0, 1, 0.5, raw, col, 0, 0, 0, 0);
+                    v.push_back(p);
+                }
+                else if(raw >= waterLvl) 
+                {
+                    Matter p(0, 1, 0.5, raw, col, 0, 0, 0, 0);
+                    v.push_back(p);
+                }
             }
         }
-        this->mat.push_back(v);//Matter matrix
+        this->mat.push_back(v);
     }
 }
 
@@ -95,11 +89,11 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl)
  */
 Matrix::~Matrix()
 {
-    for(int i = 0; i<this->height; i++)
+    for(int i = mat.size(); i>=0; i--)
     {
-        for(int k = 0; k<this->width; k++)
+        for(int k = 0; k<mat[i].size(); k++)
         {
-            this->mat[i][k] = NULL;
+            this->mat[i][k].~Matter();
         }
         this->mat[i] = {};
     }
@@ -113,21 +107,13 @@ Matrix::~Matrix()
  * 
  * @param force Regarding matter's weight 
  */
-void Matrix::Gravity(float force = 1)
+void Matrix::Gravity(float force = 1, std::vector<int> applicationVector)
 {
-    for(int raw = 0; raw<this->height; raw++)
+    for(int kind = 0; kind<applicationVector.size(); kind++)//Through the authorised kind of matter
     {
-        for(int col = 0; col<this->width; col++)
+        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
-            if(this->mat[raw][col].drop && !this->mat[raw][col].moved)
-            {
-                this->mat[raw][col].receive[1] += force*this->mat[raw][col].weight;
-                for(int i = 0; i<8; i++)
-                {  
-                    int sraw = theSwitcher(i, true);
-                    int scol = theSwitcher(i, false);
-                }
-            }
+            mat[kind][matter].computeAcceleration(force, 0);
         }       
     }
 }
@@ -139,62 +125,25 @@ void Matrix::Gravity(float force = 1)
  * 
  * @param loss vanishing coeff
  */
-void Matrix::Transmission(float transmission, float loss)
+void Matrix::Transmission(float transmission, float loss, std::vector<int> applicationVector)
 {
-    for(int raw = 0; raw<this->height; raw++)
+    for(int kind = 0; kind<applicationVector.size(); kind++)//Through the authorised kind of matter
     {
-        for(int col = 0; col<this->width; col++)
+        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
-            if(this->mat[raw][col].drop && !this->mat[raw][col].moved)//If a drop, look forces around
-            {
-                for(int i = 0; i<8; i++)
-                {  
-                    int sraw = theSwitcher(i, true);
-                    int scol = theSwitcher(i, false);
-                    if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width){}
-                    else if(this->mat[raw+sraw][col+scol].drop)
-                    {
-                        float k;
-                        //Keep the norm
-                        if(((i+4)%8)==this->mat[raw+sraw][col+scol].giveDir) k=1;
-                        else k = 1/sqrt(2);
-                        //Receive
-                        this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
-                        //Give
-                        this->mat[raw][col].receive[i] += transmission*k*this->mat[raw][col].give[i];
-                    }
-                }
-            }
+            mat[kind][matter].computeAcceleration(0, 0);
         }       
     }
 }
 
-void Matrix::Reaction(float transmission, float loss)
+
+void Matrix::Reaction(float transmission, float loss, std::vector<int> applicationVector)
 {
-    for(int raw = 0; raw<this->height; raw++)
+    for(int kind = 0; kind<applicationVector.size(); kind++)//Through the authorised kind of matter
     {
-        for(int col = 0; col<this->width; col++)
+        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
-            if(this->mat[raw][col].drop && !this->mat[raw][col].moved)//If a drop, look forces around
-            {
-                for(int i = 0; i<8; i++)
-                {  
-                    int sraw = theSwitcher(i, true);
-                    int scol = theSwitcher(i, false);
-                    if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width){}
-                    else if(this->mat[raw+sraw][col+scol].drop)
-                    {
-                        float k;
-                        //Keep the norm
-                        if(((i+4)%8)==this->mat[raw+sraw][col+scol].giveDir) k=1;
-                        else k = 1/sqrt(2);
-                        //Receive
-                        this->mat[raw][col].receive[i] += transmission*this->mat[raw+sraw][col+scol].give[(i+4)%8];
-                        //Give
-                        this->mat[raw][col].receive[i] += transmission*k*this->mat[raw][col].give[i];
-                    }
-                }
-            }
+            mat[kind][matter].computeAcceleration(0, 0);
         }       
     }
 }
@@ -204,28 +153,13 @@ void Matrix::Reaction(float transmission, float loss)
  * 
  * @param fluidTension coeff of tension
  */
-void Matrix::Tension(float fluidTension)
+void Matrix::Tension(float fluidTension, std::vector<int> applicationVector)
 {
-    for(int raw = 0; raw<this->height; raw++)
+    for(int kind = 0; kind<applicationVector.size(); kind++)//Through the authorised kind of matter
     {
-        for(int col = 0; col<this->width; col++)
+        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
-            if(this->mat[raw][col].drop && !this->mat[raw][col].moved)//If a drop, look forces around
-            {
-                for(int i = 0; i<8; i++)
-                {
-                    int sraw = theSwitcher(i, true);
-                    int scol = theSwitcher(i, false);
-                    if((raw+sraw)<0 || (raw+sraw)>=this->height || (col+scol)<0 || (col+scol)>=this->width){}
-                    else if(this->mat[raw+sraw][col+scol].drop)
-                    {
-                        /*//Internal fluid tension
-                        this->mat[raw][col].receive[(i+4)%8] += fluidTension*this->mat[raw+sraw][col+scol].give[i];
-                        //Internal fluid loss
-                        this->mat[raw+sraw][col+scol].receive[i] += fluidTension*this->mat[raw+sraw][col+scol].give[i];*/
-                    }
-                }
-            }
+            mat[kind][matter].computeAcceleration(0, 0);
         }       
     }
 }
@@ -249,15 +183,10 @@ void Matrix::animate(int time, bool t)
 
     for(int i = 0; i<=time; i++)
     {
-        //std::cout << "1";
         Gravity(gravity);//Make them fall
-        updateGives(wallLoss, timeLoss);
-        Transmission(transmission, loss);//Update external forces from gives
-        updateGives(wallLoss, timeLoss);//Update movement direction
-        //Tension(fluidTension);//Update internal fluid tensions
-        //updateGives(wallLoss, timeLoss);//Update movement direction
-        updatePositions(t);//Update positions
-        std::cout << this->totalStrenght();
+        updateSpeed(0, 0);//These forces applied during a delta time (small)
+        updatePosition(0);//This speed applied during a small delta time
+        resetAcceleration();//No forces
     }
 }
 
@@ -267,153 +196,44 @@ void Matrix::animate(int time, bool t)
  * @param wallLoss Loss energy during a collision with a wall
  * @param timeLoss Vanishing energy over time
  */
-void Matrix::updateGives(float wallLoss, float timeLoss)
+void Matrix::updateSpeed(float wallLoss, float timeLoss)
 {
-    resetGive();
-    for(int raw = 0; raw<this->height; raw++)
+    for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
     {
-        for(int col = 0; col<this->width; col++)
+        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
-            if(this->mat[raw][col].drop && !this->mat[raw][col].moved) 
-            {
-                int wall = 0;
-                if((raw-1)<0) wall += 1;
-                else if((raw+1)>=this->height) wall += 2;
-                if((col-1)<0) wall += 10;
-                else if((col+1)>=this->width) wall += 20;
-                this->mat[raw][col].pfd(wallLoss, timeLoss, wall);
-            }
-        }
+            mat[kind][matter].computeSpeed(0.1);
+        }       
     }
-    resetReceive();
 }
 
 /**
  * @brief Move each matter along it force vector
  * 
  */
-void Matrix::updatePositions(bool sens)
+void Matrix::updatePosition(bool sens)
 {
-    std::vector<int> neighbours;
-    for(int raw = 0; raw<this->height; raw++)
+    for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
     {
-        for(int precol = 0; precol<this->width; precol++)
+        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
-            int col;
-            if(sens) col = this->width-1-precol;
-            else col = precol;
-            //Look for neighbourhood
-            if(this->mat[raw][col].drop && !(this->mat[raw][col].moved))
-            {
-                neighbours = {};
-                for(int i = 0; i<8; i++)
-                {
-                    int sraw = theSwitcher(i, true);
-                    int scol = theSwitcher(i, false);
-                    //Boundary neighboors (nothing goes out)
-                    if((raw+sraw)<0) neighbours.push_back(1);
-                    else if((raw+sraw)>=this->height) neighbours.push_back(1);
-                    else if ((col+scol)<0) neighbours.push_back(1);
-                    else if((col+scol)>=this->width) neighbours.push_back(1);
-                    else
-                    {
-                        if(this->mat[raw+sraw][col+scol].drop) neighbours.push_back(1);
-                        else neighbours.push_back(0);
-                    }
-                }
-                //Move if needed
-                switch(this->mat[raw][col].move(neighbours))
-                {
-                    case 0:
-                        this->mat[raw-1][col-1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 1:
-                        this->mat[raw-1][col].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 2:
-                        this->mat[raw-1][col+1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 3:
-                        this->mat[raw][col+1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 4:
-                        this->mat[raw+1][col+1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 5:
-                        this->mat[raw+1][col].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 6:
-                        this->mat[raw+1][col-1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    case 7:
-                        this->mat[raw][col-1].hello(this->mat[raw][col]);
-                        this->mat[raw][col].bye();
-                    break;
-                    default:
-                    break;
-                }
-            }
-        }
+            mat[kind][matter].computePosition(0.1);
+        }       
     }
-    resetMoved();
 }
 
 /**
  * @brief Just say everything goes ok
  * 
  */
-void Matrix::resetMoved()
+void Matrix::resetAcceleration()
 {
-    for(int raw = 0; raw<this->height; raw++)
+    for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
     {
-        for(int col = 0; col<this->width; col++)
+        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
-            if(this->mat[raw][col].drop) 
-            {
-                this->mat[raw][col].moved = false; 
-                //std::cout << this->mat[raw][col].strenght() << " ";
-            }
-
-        }
-    }
-}
-
-/**
- * @brief Evaluate forces on each step
- * 
- */
-void Matrix::resetReceive()
-{
-    for(int raw = 0; raw<this->height; raw++)
-    {
-        for(int col = 0; col<this->width; col++)
-        {
-            if(this->mat[raw][col].drop) 
-                for(int i = 0; i<8; i++) this->mat[raw][col].receive[i] = 0;
-        }
-    }
-}
-
-/**
- * @brief Set give to 0
- * 
- */
-void Matrix::resetGive()
-{
-    for(int raw = 0; raw<this->height; raw++)
-    {
-        for(int col = 0; col<this->width; col++)
-        {
-            if(this->mat[raw][col].drop) 
-                for(int i = 0; i<8; i++) this->mat[raw][col].give[i] = 0;
-        }
+            mat[kind][matter].resetAcceleration();
+        }       
     }
 }
 
@@ -427,13 +247,12 @@ void Matrix::resetGive()
 float Matrix::totalStrenght()
 {
     float k = 0;
-    for(int raw = 0; raw<this->height; raw++)
+    for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
     {
-        for(int col = 0; col<this->width; col++)
+        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
-            if(this->mat[raw][col].drop) 
-                k += this->mat[raw][col].strenght();
-        }
+            k += mat[kind][matter].getSpeed();
+        }       
     }
     return k;
 }

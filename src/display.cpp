@@ -81,40 +81,45 @@ void Display::show(Matrix m, int nj, int clingTime)
         SetConsoleTextAttribute(hConsole, 15);
         for(int col = 0; col < this->width; col++)
         {
-            if(m.mat[raw][col].drop) 
+            bool isIt = false;
+            for(int kind = 0; kind<m.mat.size(); kind++)//Through the authorised kind of matter
             {
-                int s = int(m.mat[raw][col].strenght());
-                switch(s)
+                for(int matter = 0; matter<m.mat[kind].size(); matter++)//Through the matter
                 {
-                    case 0:
-                        SetConsoleTextAttribute(hConsole, 150);
-                    break;
-                    case 1:
-                        SetConsoleTextAttribute(hConsole, 180);
-                    break;
-                    case 2:
-                        SetConsoleTextAttribute(hConsole, 160);
-                    break;
-                    case 3:
-                        SetConsoleTextAttribute(hConsole, 230);
-                    break;
-                    case 4:
-                        SetConsoleTextAttribute(hConsole, 210);
-                    break;
-                    case 5:
-                        SetConsoleTextAttribute(hConsole, 200);
-                    break;
-                    default:
-                        SetConsoleTextAttribute(hConsole, 240);
-                    break;
-                }
-                std::cout << " ";
-                SetConsoleTextAttribute(hConsole, 15);
-            }
-            else
-            {
-                std::cout << " ";
-            }  
+                    if((raw == m.mat[kind][matter].getPos().raw)&&(col == m.mat[kind][matter].getPos().col))
+                    {
+                        isIt = true;
+                        int s = int(m.mat[raw][col].getSpeed());
+                        switch(s)
+                        {
+                            case 0:
+                                SetConsoleTextAttribute(hConsole, 150);
+                            break;
+                            case 1:
+                                SetConsoleTextAttribute(hConsole, 180);
+                            break;
+                            case 2:
+                                SetConsoleTextAttribute(hConsole, 160);
+                            break;
+                            case 3:
+                                SetConsoleTextAttribute(hConsole, 230);
+                            break;
+                            case 4:
+                                SetConsoleTextAttribute(hConsole, 210);
+                            break;
+                            case 5:
+                                SetConsoleTextAttribute(hConsole, 200);
+                            break;
+                            default:
+                                SetConsoleTextAttribute(hConsole, 240);
+                            break;
+                        }
+                        std::cout << " ";
+                        SetConsoleTextAttribute(hConsole, 15);
+                    } 
+                }       
+            } 
+            if(!isIt) std::cout << " ";
         }
         SetConsoleTextAttribute(hConsole, border);
         std::cout << "|" << std::endl;

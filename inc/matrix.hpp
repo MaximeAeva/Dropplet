@@ -8,11 +8,6 @@
 #include <iostream>
 #include <matter.hpp>
 
-struct Coord{
-    int raw;
-    int col;
-};
-
 /**
  * @brief A matrix of matter
  * 
@@ -20,7 +15,7 @@ struct Coord{
 class Matrix{
 
     public:
-        Matrix(int heigth, int width, Coord cd, int waterLvl = 20);
+        Matrix(int heigth, int width, Coord cd, int waterLvl = 20, int matterKindDiversity = 1);
         ~Matrix();
        std::vector<std::vector<Matter> > mat;
        void animate(int time, bool t);
@@ -28,15 +23,13 @@ class Matrix{
        float totalStrenght();
 
     private:
-        void Transmission(float transmission, float loss);
-        void Reaction(float transmission, float loss);
-        void Tension(float fluidTension);
-        void Gravity(float force);
-        void updatePositions(bool sens);
-        void updateGives(float wallLoss, float timeLoss);
-        void resetMoved();
-        void resetReceive();
-        void resetGive();
+        void Transmission(float transmission, float loss, std::vector<int> applicationVector = {0});
+        void Reaction(float transmission, float loss, std::vector<int> applicationVector = {0});
+        void Tension(float fluidTension, std::vector<int> applicationVector = {0});
+        void Gravity(float force, std::vector<int> applicationVector = {0});
+        void updatePosition(bool sens);
+        void updateSpeed(float wallLoss, float timeLoss);
+        void resetAcceleration();
         int height;
         int width;
 };
