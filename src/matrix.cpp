@@ -107,13 +107,13 @@ Matrix::~Matrix()
  * 
  * @param force Regarding matter's weight 
  */
-void Matrix::Gravity(float force = 1, std::vector<int> applicationVector)
+void Matrix::Gravity(float force, int applicationVector[5])
 {
-    for(int kind = 0; kind<applicationVector.size(); kind++)//Through the authorised kind of matter
+    for(int kind = 0; kind<5; kind++)//Through the authorised kind of matter
     {
-        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
+        for(int seed = 0; seed<mat[applicationVector[kind]].size(); seed++)//Through the matter
         {
-            mat[kind][matter].computeAcceleration(force, 0);
+            mat[applicationVector[kind]][seed].computeAcceleration(force, 0);
         }       
     }
 }
@@ -125,9 +125,9 @@ void Matrix::Gravity(float force = 1, std::vector<int> applicationVector)
  * 
  * @param loss vanishing coeff
  */
-void Matrix::Transmission(float transmission, float loss, std::vector<int> applicationVector)
+void Matrix::Transmission(float transmission, float loss, int applicationVector[5])
 {
-    for(int kind = 0; kind<applicationVector.size(); kind++)//Through the authorised kind of matter
+    for(int kind = 0; kind<5; kind++)//Through the authorised kind of matter
     {
         for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
@@ -137,9 +137,9 @@ void Matrix::Transmission(float transmission, float loss, std::vector<int> appli
 }
 
 
-void Matrix::Reaction(float transmission, float loss, std::vector<int> applicationVector)
+void Matrix::Reaction(float transmission, float loss, int applicationVector[5])
 {
-    for(int kind = 0; kind<applicationVector.size(); kind++)//Through the authorised kind of matter
+    for(int kind = 0; kind<5; kind++)//Through the authorised kind of matter
     {
         for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
@@ -153,9 +153,9 @@ void Matrix::Reaction(float transmission, float loss, std::vector<int> applicati
  * 
  * @param fluidTension coeff of tension
  */
-void Matrix::Tension(float fluidTension, std::vector<int> applicationVector)
+void Matrix::Tension(float fluidTension, int applicationVector[5])
 {
-    for(int kind = 0; kind<applicationVector.size(); kind++)//Through the authorised kind of matter
+    for(int kind = 0; kind<5; kind++)//Through the authorised kind of matter
     {
         for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
         {
@@ -180,14 +180,16 @@ void Matrix::animate(int time, bool t)
     float loss = 0;//Loss energy at each collision
     float wallLoss = 0;//Loss at each wall collision
     float timeLoss = 0;//Loss at each step
+    int foo[5] = {0, 0 , 0, 0, 0};
 
     for(int i = 0; i<=time; i++)
     {
-        Gravity(gravity);//Make them fall
+        Gravity(gravity, foo);//Make them fall
         updateSpeed(0, 0);//These forces applied during a delta time (small)
         updatePosition(0);//This speed applied during a small delta time
         resetAcceleration();//No forces
     }
+
 }
 
 /**
@@ -200,9 +202,9 @@ void Matrix::updateSpeed(float wallLoss, float timeLoss)
 {
     for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
     {
-        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
+        for(int seed = 0; seed<mat[kind].size(); seed++)//Through the matter
         {
-            mat[kind][matter].computeSpeed(0.1);
+            mat[kind][seed].computeSpeed(0.1);
         }       
     }
 }
@@ -215,9 +217,9 @@ void Matrix::updatePosition(bool sens)
 {
     for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
     {
-        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
+        for(int seed = 0; seed<mat[kind].size(); seed++)//Through the matter
         {
-            mat[kind][matter].computePosition(0.1);
+            mat[kind][seed].computePosition(0.1);
         }       
     }
 }
@@ -230,9 +232,9 @@ void Matrix::resetAcceleration()
 {
     for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
     {
-        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
+        for(int seed = 0; seed<mat[kind].size(); seed++)//Through the matter
         {
-            mat[kind][matter].resetAcceleration();
+            mat[kind][seed].resetAcceleration();
         }       
     }
 }
@@ -249,9 +251,9 @@ float Matrix::totalStrenght()
     float k = 0;
     for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
     {
-        for(int matter = 0; matter<mat[kind].size(); matter++)//Through the matter
+        for(int seed = 0; seed<mat[kind].size(); seed++)//Through the matter
         {
-            k += mat[kind][matter].getSpeed();
+            k += mat[kind][seed].getSpeed();
         }       
     }
     return k;

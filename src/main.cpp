@@ -26,7 +26,7 @@ int main()
     while(1)
     {
         d.show(m, nj, 100);//Refresh time can be limit
-        m.animate(0, t);
+        m.animate(10, t);
         if(t) t = false;
         else t = true;
     }

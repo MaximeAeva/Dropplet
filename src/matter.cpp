@@ -19,7 +19,7 @@ Matter::Matter(int matterKind, float mass, float size, float xPos, float yPos, f
     this->mass = mass;
     this->size = size;
     this->position = {xPos, yPos};
-    this->speed = {xPos, yPos};
+    this->speed = {xSpd, ySpd};
     this->acceleration = {xAcc, yAcc};
 }
 

@@ -23,10 +23,10 @@ class Matrix{
        float totalStrenght();
 
     private:
-        void Transmission(float transmission, float loss, std::vector<int> applicationVector = {0});
-        void Reaction(float transmission, float loss, std::vector<int> applicationVector = {0});
-        void Tension(float fluidTension, std::vector<int> applicationVector = {0});
-        void Gravity(float force, std::vector<int> applicationVector = {0});
+        void Transmission(float transmission, float loss, int applicationVector[5]);
+        void Reaction(float transmission, float loss, int applicationVector[5]);
+        void Tension(float fluidTension, int applicationVector[5]);
+        void Gravity(float force, int applicationVector[5]);
         void updatePosition(bool sens);
         void updateSpeed(float wallLoss, float timeLoss);
         void resetAcceleration();

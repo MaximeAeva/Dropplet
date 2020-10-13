@@ -84,12 +84,12 @@ void Display::show(Matrix m, int nj, int clingTime)
             bool isIt = false;
             for(int kind = 0; kind<m.mat.size(); kind++)//Through the authorised kind of matter
             {
-                for(int matter = 0; matter<m.mat[kind].size(); matter++)//Through the matter
+                for(int seed = 0; seed<m.mat[kind].size(); seed++)//Through the matter
                 {
-                    if((raw == m.mat[kind][matter].getPos().raw)&&(col == m.mat[kind][matter].getPos().col))
+                    if((raw == m.mat[kind][seed].getPos().raw)&&(col == m.mat[kind][seed].getPos().col))
                     {
                         isIt = true;
-                        int s = int(m.mat[raw][col].getSpeed());
+                        int s = int(m.mat[kind][seed].getSpeed());
                         switch(s)
                         {
                             case 0:
