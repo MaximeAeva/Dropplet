@@ -81,14 +81,12 @@ void Display::show(Matrix m, int nj, int clingTime)
         SetConsoleTextAttribute(hConsole, 15);
         for(int col = 0; col < this->width; col++)
         {
-            bool isIt = false;
             for(int kind = 0; kind<m.mat.size(); kind++)//Through the authorised kind of matter
             {
                 for(int seed = 0; seed<m.mat[kind].size(); seed++)//Through the matter
                 {
-                    if((raw == m.mat[kind][seed].getPos().raw)&&(col == m.mat[kind][seed].getPos().col))
+                    if((raw == m.mat[kind][seed].getCoord().raw)&&(col == m.mat[kind][seed].getCoord().col))
                     {
-                        isIt = true;
                         int s = int(m.mat[kind][seed].getSpeed());
                         switch(s)
                         {
@@ -113,13 +111,12 @@ void Display::show(Matrix m, int nj, int clingTime)
                             default:
                                 SetConsoleTextAttribute(hConsole, 240);
                             break;
-                        }
-                        std::cout << " ";
-                        SetConsoleTextAttribute(hConsole, 15);
+                        }  
                     } 
                 }       
             } 
-            if(!isIt) std::cout << " ";
+            std::cout << " ";
+            SetConsoleTextAttribute(hConsole, 15);
         }
         SetConsoleTextAttribute(hConsole, border);
         std::cout << "|" << std::endl;

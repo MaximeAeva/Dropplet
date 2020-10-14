@@ -34,8 +34,43 @@ class Matter{
          * 
          */
         int matterKind;
+        /**
+         * @brief Get the Speed object
+         * 
+         * @return float 
+         */
         inline float getSpeed(){return sqrt(pow(this->speed.x, 2)+pow(this->speed.y, 2));};
-        inline Coord getPos(){return {round(this->position.x), round(this->position.y)};};
+        /**
+         * @brief Get the Coord object
+         * 
+         * @return Coord 
+         */
+        inline Coord getCoord(){return {round(this->position.x), round(this->position.y)};};
+        /**
+         * @brief Get the Acc object
+         * 
+         * @return F 
+         */
+        inline F getAcc(){return {this->acceleration.x, this->acceleration.y};};
+        /**
+         * @brief Get the Spd object
+         * 
+         * @return F 
+         */
+        inline F getSpd(){return {this->speed.x, this->speed.y};};
+        /**
+         * @brief Get the Pos object
+         * 
+         * @return F 
+         */
+        inline F getPos(){return {this->position.x, this->position.y};};
+        /**
+         * @brief Get the Size object
+         * 
+         * @return float 
+         */
+        inline float getSize(){return this->size;};
+
 
     private:
         /**

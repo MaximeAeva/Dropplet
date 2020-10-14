@@ -23,13 +23,15 @@ class Matrix{
        float totalStrenght();
 
     private:
-        void Transmission(float transmission, float loss, int applicationVector[5]);
-        void Reaction(float transmission, float loss, int applicationVector[5]);
-        void Tension(float fluidTension, int applicationVector[5]);
-        void Gravity(float force, int applicationVector[5]);
-        void updatePosition(bool sens);
-        void updateSpeed(float wallLoss, float timeLoss);
+        void BoundaryConditions(float wallLoss, float timeStep);
+        void Transmission(float transmission, float loss);
+        void Reaction(float transmission, float loss);
+        void Tension(float fluidTension);
+        void Gravity(float force);
+        void updatePosition(float timeStep);
+        void updateSpeed(float timeStep);
         void resetAcceleration();
+        int applicationVector[1] = {0};
         int height;
         int width;
 };
