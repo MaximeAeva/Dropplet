@@ -70,6 +70,19 @@ class Matter{
          * @return float 
          */
         inline float getSize(){return this->size;};
+        /**
+         * @brief Get the Mass object
+         * 
+         * @return float 
+         */
+        inline float getMass(){return this->mass;};
+        /**
+         * @brief Get the Arg object
+         * 
+         * @return float 
+         */
+        inline float getArg(){return atan2(this->speed.y, this->speed.x);};
+
 
 
     private:

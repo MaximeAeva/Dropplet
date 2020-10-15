@@ -24,7 +24,7 @@ class Matrix{
 
     private:
         void BoundaryConditions(float wallLoss, float timeStep);
-        void Transmission(float transmission, float loss);
+        void Transmission(float transmission, float loss, float timeStep);
         void Reaction(float transmission, float loss);
         void Tension(float fluidTension);
         void Gravity(float force);
