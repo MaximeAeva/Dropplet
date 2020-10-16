@@ -176,7 +176,7 @@ void Matrix::Transmission(float transmission, float loss, float timeStep)
                     {
                         float arg = atan2(mat[applicationVector[kind]][otherSeed].getPos().y - mat[applicationVector[kind]][seed].getPos().y, 
                         mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
-                        if(abs(mat[applicationVector[kind]][seed].getArg()-arg)<(3.141592/2))//Well oriented
+                        if(cos(mat[applicationVector[kind]][seed].getArg()-arg)>0)//Well oriented
                         {
                             float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(abs(mat[applicationVector[kind]][seed].getArg()-arg));
                             mat[applicationVector[kind]][otherSeed].computeAcceleration(tr*cos(arg)/timeStep, tr*sin(arg)/timeStep);
