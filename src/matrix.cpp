@@ -64,12 +64,22 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl, int matterKindDive
             {
                 if((raw==cd.raw)&&(col==cd.col)) 
                 {
-                    Matter p(0, 1, 0.5, raw, col, 0, -2, 0, 0);
+                    Matter p(0, 1, 0.5, raw, col+0.01, 0, 0, 0, 0);
+                    Matter q(0, 1, 0.5, raw+2, col, 0, 0, 0, 0);
+                    Matter r(0, 1, 0.5, raw+2, col+2, 0, 0, 0, 0);
+                    Matter s(0, 1, 0.5, raw+2, col-2, 0, 0, 0, 0);
+                    Matter t(0, 1, 0.5, raw+4, col+5, 0, 0, 0, 0);
+                    Matter u(0, 1, 0.5, raw, col-5, 0, 0, 0, 0);
                     v.push_back(p);
+                    v.push_back(q);
+                    v.push_back(r);
+                    v.push_back(s);
+                    v.push_back(t);
+                    v.push_back(u);
                 }
                 else if((raw==cd.raw)&&(col==(cd.col+1))) 
                 {
-                    Matter p(0, 1, 0.5, raw, col, 0, 5, 0, 0);
+                    Matter p(0, 1, 0.5, raw, col-1+0.1, 0, 0, 0, 0);
                     v.push_back(p);
                 }
                 /*else if(raw >= waterLvl) 
@@ -116,12 +126,12 @@ void Matrix::BoundaryConditions(float wallLoss, float timeStep)
                 if(mat[k][seed].getAcc().x > 0) mat[k][seed].computeAcceleration(-coeff*mat[k][seed].getAcc().x, 0);
                 if(mat[k][seed].getSpd().x > 0) mat[k][seed].computeAcceleration((-coeff*mat[k][seed].getSpd().x)/timeStep, 0);
             }
-            else if(mat[k][seed].getPos().x - mat[k][seed].getSize() < 0)//ceilling
+            else if(mat[k][seed].getPos().x - mat[k][seed].getSize() < -mat[k][seed].getSize()/2)//ceilling
             {
                 if(mat[k][seed].getAcc().x < 0) mat[k][seed].computeAcceleration(-coeff*mat[k][seed].getAcc().x, 0);
                 if(mat[k][seed].getSpd().x < 0) mat[k][seed].computeAcceleration((-coeff*mat[k][seed].getSpd().x)/timeStep, 0);
             }
-            else if(mat[k][seed].getPos().y - mat[k][seed].getSize() < 0)//left wall
+            else if(mat[k][seed].getPos().y - mat[k][seed].getSize() < -mat[k][seed].getSize()/2)//left wall
             {
                 if(mat[k][seed].getAcc().y < 0) mat[k][seed].computeAcceleration(0, -coeff*mat[k][seed].getAcc().y);
                 if(mat[k][seed].getSpd().y < 0) mat[k][seed].computeAcceleration(0, (-coeff*mat[k][seed].getSpd().y)/timeStep);
@@ -214,7 +224,25 @@ void Matrix::Tension(float fluidTension)
     {
         for(int seed = 0; seed<mat[kind].size(); seed++)//Through the matter
         {
-            mat[applicationVector[kind]][seed].computeAcceleration(0, 0);
+           for(int otherSeed = 0; otherSeed<mat[kind].size(); otherSeed++)//Through the matter
+            {
+                if(otherSeed != seed)//Do not interact with itself
+                {
+                    float distance = sqrt(pow(mat[applicationVector[kind]][seed].getPos().x - mat[applicationVector[kind]][otherSeed].getPos().x, 2) + 
+                                        pow(mat[applicationVector[kind]][seed].getPos().y - mat[applicationVector[kind]][otherSeed].getPos().y, 2));
+                    if(distance <= (mat[applicationVector[kind]][seed].getSize()+mat[applicationVector[kind]][otherSeed].getSize()))//Close enough
+                    {
+                        float arg = atan2(mat[applicationVector[kind]][otherSeed].getPos().y - mat[applicationVector[kind]][seed].getPos().y, 
+                        mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
+                        if(cos(mat[applicationVector[kind]][seed].getArg()-arg)<0)//Well oriented
+                        {
+                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(abs(mat[applicationVector[kind]][seed].getArg()-arg))*fluidTension;
+                            mat[applicationVector[kind]][otherSeed].computeAcceleration(tr*cos(arg), tr*sin(arg));
+                            mat[applicationVector[kind]][seed].computeAcceleration(-tr*cos(arg), -tr*sin(arg));
+                        }
+                    }
+                }    
+            }  
         }       
     }
 }
@@ -231,9 +259,9 @@ void Matrix::animate(int time, bool t)
 {
     float transmission = 1;//Energy given to the others
     float gravity = 1;//Force in g
-    float fluidTension = 0;//Percentage of follow up
+    float fluidTension = 0.5;//Percentage of follow up
     float loss = 0;//Loss energy at each collision
-    float wallLoss = 0;//Loss at each wall collision
+    float wallLoss = 0.5;//Loss at each wall collision
     float timeLoss = 0;//Loss at each step
     float timeStep = 0.01;
 
@@ -243,10 +271,13 @@ void Matrix::animate(int time, bool t)
 
         Transmission(transmission, loss, timeStep);
 
+        Tension(fluidTension);
+
         BoundaryConditions(wallLoss, timeStep);
         
-        updatePosition(timeStep);//This speed applied during a small delta time
         updateSpeed(timeStep);//These forces applied during a delta time (small)
+        updatePosition(timeStep);//This speed applied during a small delta time
+        
         resetAcceleration();//No forces
     }
 
