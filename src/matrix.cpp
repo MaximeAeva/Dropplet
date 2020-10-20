@@ -123,22 +123,22 @@ void Matrix::BoundaryConditions(float wallLoss, float timeStep)
             int k = applicationVector[kind];
             if(mat[k][seed].getPos().x + mat[k][seed].getSize() >= this->height)//floor
             {
-                if(mat[k][seed].getAcc().x > 0) mat[k][seed].computeAcceleration(-coeff*mat[k][seed].getAcc().x, 0);
+                if(mat[k][seed].getAcc().x > 0) mat[k][seed].computeAcceleration(-mat[k][seed].getAcc().x, 0);
                 if(mat[k][seed].getSpd().x > 0) mat[k][seed].computeAcceleration((-coeff*mat[k][seed].getSpd().x)/timeStep, 0);
             }
             else if(mat[k][seed].getPos().x - mat[k][seed].getSize() < -mat[k][seed].getSize()/2)//ceilling
             {
-                if(mat[k][seed].getAcc().x < 0) mat[k][seed].computeAcceleration(-coeff*mat[k][seed].getAcc().x, 0);
+                if(mat[k][seed].getAcc().x < 0) mat[k][seed].computeAcceleration(-mat[k][seed].getAcc().x, 0);
                 if(mat[k][seed].getSpd().x < 0) mat[k][seed].computeAcceleration((-coeff*mat[k][seed].getSpd().x)/timeStep, 0);
             }
             else if(mat[k][seed].getPos().y - mat[k][seed].getSize() < -mat[k][seed].getSize()/2)//left wall
             {
-                if(mat[k][seed].getAcc().y < 0) mat[k][seed].computeAcceleration(0, -coeff*mat[k][seed].getAcc().y);
+                if(mat[k][seed].getAcc().y < 0) mat[k][seed].computeAcceleration(0, -mat[k][seed].getAcc().y);
                 if(mat[k][seed].getSpd().y < 0) mat[k][seed].computeAcceleration(0, (-coeff*mat[k][seed].getSpd().y)/timeStep);
             }
             else if(mat[k][seed].getPos().y + mat[k][seed].getSize() >= this->width)//right wall
             {
-                if(mat[k][seed].getAcc().y > 0) mat[k][seed].computeAcceleration(0, -coeff*mat[k][seed].getAcc().y);
+                if(mat[k][seed].getAcc().y > 0) mat[k][seed].computeAcceleration(0, -mat[k][seed].getAcc().y);
                 if(mat[k][seed].getSpd().y > 0) mat[k][seed].computeAcceleration(0, (-coeff*mat[k][seed].getSpd().y)/timeStep);
             }
         }       
