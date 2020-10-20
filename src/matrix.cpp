@@ -62,31 +62,11 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl, int matterKindDive
         {   
             for(int col = 0; col < width; col++)
             {
-                if((raw==cd.raw)&&(col==cd.col)) 
+                if((raw>= height-5) && (raw<= height-3) && (col%2 == 0)) 
                 {
-                    Matter p(0, 1, 0.5, raw, col+0.01, 0, 0, 0, 0);
-                    Matter q(0, 1, 0.5, raw+2, col, 0, 0, 0, 0);
-                    Matter r(0, 1, 0.5, raw+2, col+2, 0, 0, 0, 0);
-                    Matter s(0, 1, 0.5, raw+2, col-2, 0, 0, 0, 0);
-                    Matter t(0, 1, 0.5, raw+4, col+5, 0, 0, 0, 0);
-                    Matter u(0, 1, 0.5, raw, col-5, 0, 0, 0, 0);
-                    v.push_back(p);
-                    v.push_back(q);
-                    v.push_back(r);
-                    v.push_back(s);
-                    v.push_back(t);
-                    v.push_back(u);
-                }
-                else if((raw==cd.raw)&&(col==(cd.col+1))) 
-                {
-                    Matter p(0, 1, 0.5, raw, col-1+0.1, 0, 0, 0, 0);
+                    Matter p(0, 1, 0.5, raw+(rand() % 100 - 50)/100, col+(rand() % 100 -50)/100, 0, 0, 0, 0);
                     v.push_back(p);
                 }
-                /*else if(raw >= waterLvl) 
-                {
-                    Matter p(0, 1, 0.5, raw, col, 0, 0, 0, 0);
-                    v.push_back(p);
-                }*/
             }
         }
         this->mat.push_back(v);
@@ -121,25 +101,25 @@ void Matrix::BoundaryConditions(float wallLoss, float timeStep)
         for(int seed = 0; seed<mat[applicationVector[kind]].size(); seed++)//Through the matter
         {
             int k = applicationVector[kind];
-            if(mat[k][seed].getPos().x + mat[k][seed].getSize() >= this->height)//floor
+            if(mat[k][seed].getPos().x + mat[k][seed].getSize() >= this->height-mat[k][seed].getSize()/2)//floor
             {
-                if(mat[k][seed].getAcc().x > 0) mat[k][seed].computeAcceleration(-mat[k][seed].getAcc().x, 0);
-                if(mat[k][seed].getSpd().x > 0) mat[k][seed].computeAcceleration((-coeff*mat[k][seed].getSpd().x)/timeStep, 0);
+                if(mat[k][seed].getAcc().x > 0) mat[k][seed].computeAcceleration(-mat[k][seed].getAcc().x*mat[applicationVector[kind]][seed].getMass(), 0);
+                if(mat[k][seed].getSpd().x > 0) mat[k][seed].computeAcceleration((-coeff*mat[k][seed].getSpd().x)*mat[applicationVector[kind]][seed].getMass()/timeStep, 0);
             }
             else if(mat[k][seed].getPos().x - mat[k][seed].getSize() < -mat[k][seed].getSize()/2)//ceilling
             {
-                if(mat[k][seed].getAcc().x < 0) mat[k][seed].computeAcceleration(-mat[k][seed].getAcc().x, 0);
-                if(mat[k][seed].getSpd().x < 0) mat[k][seed].computeAcceleration((-coeff*mat[k][seed].getSpd().x)/timeStep, 0);
+                if(mat[k][seed].getAcc().x < 0) mat[k][seed].computeAcceleration(-mat[k][seed].getAcc().x*mat[applicationVector[kind]][seed].getMass(), 0);
+                if(mat[k][seed].getSpd().x < 0) mat[k][seed].computeAcceleration((-coeff*mat[k][seed].getSpd().x)*mat[applicationVector[kind]][seed].getMass()/timeStep, 0);
             }
             else if(mat[k][seed].getPos().y - mat[k][seed].getSize() < -mat[k][seed].getSize()/2)//left wall
             {
-                if(mat[k][seed].getAcc().y < 0) mat[k][seed].computeAcceleration(0, -mat[k][seed].getAcc().y);
-                if(mat[k][seed].getSpd().y < 0) mat[k][seed].computeAcceleration(0, (-coeff*mat[k][seed].getSpd().y)/timeStep);
+                if(mat[k][seed].getAcc().y < 0) mat[k][seed].computeAcceleration(0, -mat[k][seed].getAcc().y*mat[applicationVector[kind]][seed].getMass());
+                if(mat[k][seed].getSpd().y < 0) mat[k][seed].computeAcceleration(0, (-coeff*mat[k][seed].getSpd().y)*mat[applicationVector[kind]][seed].getMass()/timeStep);
             }
-            else if(mat[k][seed].getPos().y + mat[k][seed].getSize() >= this->width)//right wall
+            else if(mat[k][seed].getPos().y + mat[k][seed].getSize() >= this->width-mat[k][seed].getSize()/2)//right wall
             {
-                if(mat[k][seed].getAcc().y > 0) mat[k][seed].computeAcceleration(0, -mat[k][seed].getAcc().y);
-                if(mat[k][seed].getSpd().y > 0) mat[k][seed].computeAcceleration(0, (-coeff*mat[k][seed].getSpd().y)/timeStep);
+                if(mat[k][seed].getAcc().y > 0) mat[k][seed].computeAcceleration(0, -mat[k][seed].getAcc().y*mat[applicationVector[kind]][seed].getMass());
+                if(mat[k][seed].getSpd().y > 0) mat[k][seed].computeAcceleration(0, (-coeff*mat[k][seed].getSpd().y)*mat[applicationVector[kind]][seed].getMass()/timeStep);
             }
         }       
     }
@@ -157,7 +137,7 @@ void Matrix::Gravity(float force)
     {
         for(int seed = 0; seed<mat[applicationVector[kind]].size(); seed++)//Through the matter
         {
-            mat[applicationVector[kind]][seed].computeAcceleration(force/mat[applicationVector[kind]][seed].getMass(), 0);
+            mat[applicationVector[kind]][seed].computeAcceleration(force*mat[applicationVector[kind]][seed].getMass(), 0);
         }       
     }
 }
@@ -186,11 +166,19 @@ void Matrix::Transmission(float transmission, float loss, float timeStep)
                     {
                         float arg = atan2(mat[applicationVector[kind]][otherSeed].getPos().y - mat[applicationVector[kind]][seed].getPos().y, 
                         mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
-                        if(cos(mat[applicationVector[kind]][seed].getArg()-arg)>0)//Well oriented
+                        if(cos(mat[applicationVector[kind]][seed].getSpdArg()-arg)>0)//Well oriented
                         {
-                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(abs(mat[applicationVector[kind]][seed].getArg()-arg));
-                            mat[applicationVector[kind]][otherSeed].computeAcceleration(tr*cos(arg)/timeStep, tr*sin(arg)/timeStep);
-                            mat[applicationVector[kind]][seed].computeAcceleration(-tr*cos(arg)/timeStep, -tr*sin(arg)/timeStep);
+                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(abs(mat[applicationVector[kind]][seed].getSpdArg()-arg))
+                            *mat[applicationVector[kind]][seed].getMass();
+                            mat[applicationVector[kind]][otherSeed].computeAcceleration(transmission*tr*cos(arg)/timeStep, transmission*tr*sin(arg)/timeStep);
+                            mat[applicationVector[kind]][seed].computeAcceleration(-(2-loss-transmission)*tr*cos(arg)/timeStep, -(2-loss-transmission)*tr*sin(arg)/timeStep);
+                        }
+                        if(cos(mat[applicationVector[kind]][seed].getAccArg()-arg)>0)//Well oriented
+                        {
+                            float tra = mat[applicationVector[kind]][seed].getAcceleration()*cos(abs(mat[applicationVector[kind]][seed].getAccArg()-arg))*
+                            mat[applicationVector[kind]][seed].getMass();
+                            mat[applicationVector[kind]][otherSeed].computeAcceleration(tra*cos(arg), tra*sin(arg));
+                            mat[applicationVector[kind]][seed].computeAcceleration(-tra*cos(arg), -tra*sin(arg));
                         }
                     }
                 }    
@@ -203,13 +191,7 @@ void Matrix::Transmission(float transmission, float loss, float timeStep)
 void Matrix::Reaction(float transmission, float loss)
 {
     int arrSize = sizeof(applicationVector)/sizeof(applicationVector[0]);
-    for(int kind = 0; kind<arrSize; kind++)//Through the authorised kind of matter
-    {
-        for(int seed = 0; seed<mat[kind].size(); seed++)//Through the matter
-        {
-            mat[applicationVector[kind]][seed].computeAcceleration(0, 0);
-        }       
-    }
+
 }
 
 /**
@@ -234,9 +216,9 @@ void Matrix::Tension(float fluidTension)
                     {
                         float arg = atan2(mat[applicationVector[kind]][otherSeed].getPos().y - mat[applicationVector[kind]][seed].getPos().y, 
                         mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
-                        if(cos(mat[applicationVector[kind]][seed].getArg()-arg)<0)//Well oriented
+                        if(cos(mat[applicationVector[kind]][seed].getSpdArg()-arg)<0)//Well oriented
                         {
-                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(abs(mat[applicationVector[kind]][seed].getArg()-arg))*fluidTension;
+                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(abs(mat[applicationVector[kind]][seed].getSpdArg()-arg))*fluidTension;
                             mat[applicationVector[kind]][otherSeed].computeAcceleration(tr*cos(arg), tr*sin(arg));
                             mat[applicationVector[kind]][seed].computeAcceleration(-tr*cos(arg), -tr*sin(arg));
                         }
@@ -257,11 +239,11 @@ void Matrix::Tension(float fluidTension)
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 1;//Energy given to the others
+    float transmission = 0.8;//Energy given to the others
     float gravity = 1;//Force in g
     float fluidTension = 0.5;//Percentage of follow up
     float loss = 0;//Loss energy at each collision
-    float wallLoss = 0.5;//Loss at each wall collision
+    float wallLoss = 0;//Loss at each wall collision
     float timeLoss = 0;//Loss at each step
     float timeStep = 0.01;
 

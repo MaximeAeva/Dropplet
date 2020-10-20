@@ -41,6 +41,12 @@ class Matter{
          */
         inline float getSpeed(){return sqrt(pow(this->speed.x, 2)+pow(this->speed.y, 2));};
         /**
+         * @brief Get the Acceleration object
+         * 
+         * @return float 
+         */
+        inline float getAcceleration(){return sqrt(pow(this->acceleration.x, 2)+pow(this->acceleration.y, 2));};
+        /**
          * @brief Get the Coord object
          * 
          * @return Coord 
@@ -77,11 +83,17 @@ class Matter{
          */
         inline float getMass(){return this->mass;};
         /**
-         * @brief Get the Arg object
+         * @brief Get the Spd Arg object
          * 
          * @return float 
          */
-        inline float getArg(){return atan2(this->speed.y, this->speed.x);};
+        inline float getSpdArg(){return atan2(this->speed.y, this->speed.x);};
+        /**
+         * @brief Get the Acc Arg object
+         * 
+         * @return float 
+         */
+        inline float getAccArg(){return atan2(this->acceleration.y, this->acceleration.x);};
 
 
 
