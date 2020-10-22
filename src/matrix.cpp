@@ -62,9 +62,9 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl, int matterKindDive
         {   
             for(int col = 0; col < width; col++)
             {
-                if((raw>= height-5) && (raw<= height-3) && (col%2 == 0)) 
+                if((raw==1) && (col>= 5) && col < 8) 
                 {
-                    Matter p(0, 1, 0.5, raw+(rand() % 100 - 50)/100, col+(rand() % 100 -50)/100, 0, 0, 0, 0);
+                    Matter p(0, 1, 0.5, raw+(rand() % 100 - 50)/100, col+(rand() % 100 -50)/100, 0, rand() % 10 - 5, 0, 0);
                     v.push_back(p);
                 }
             }
@@ -168,14 +168,14 @@ void Matrix::Transmission(float transmission, float loss, float timeStep)
                         mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
                         if(cos(mat[applicationVector[kind]][seed].getSpdArg()-arg)>0)//Well oriented
                         {
-                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(abs(mat[applicationVector[kind]][seed].getSpdArg()-arg))
+                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(mat[applicationVector[kind]][seed].getSpdArg()-arg)
                             *mat[applicationVector[kind]][seed].getMass();
                             mat[applicationVector[kind]][otherSeed].computeAcceleration(transmission*tr*cos(arg)/timeStep, transmission*tr*sin(arg)/timeStep);
                             mat[applicationVector[kind]][seed].computeAcceleration(-(2-loss-transmission)*tr*cos(arg)/timeStep, -(2-loss-transmission)*tr*sin(arg)/timeStep);
                         }
-                        if(cos(mat[applicationVector[kind]][seed].getAccArg()-arg)>0)//Well oriented
+                        if(cos(mat[applicationVector[kind]][seed].getAccArg()-arg)>0)
                         {
-                            float tra = mat[applicationVector[kind]][seed].getAcceleration()*cos(abs(mat[applicationVector[kind]][seed].getAccArg()-arg))*
+                            float tra = mat[applicationVector[kind]][seed].getAcceleration()*cos(mat[applicationVector[kind]][seed].getAccArg()-arg)*
                             mat[applicationVector[kind]][seed].getMass();
                             mat[applicationVector[kind]][otherSeed].computeAcceleration(tra*cos(arg), tra*sin(arg));
                             mat[applicationVector[kind]][seed].computeAcceleration(-tra*cos(arg), -tra*sin(arg));
@@ -218,7 +218,7 @@ void Matrix::Tension(float fluidTension)
                         mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
                         if(cos(mat[applicationVector[kind]][seed].getSpdArg()-arg)<0)//Well oriented
                         {
-                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(abs(mat[applicationVector[kind]][seed].getSpdArg()-arg))*fluidTension;
+                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(mat[applicationVector[kind]][seed].getSpdArg()-arg)*fluidTension;
                             mat[applicationVector[kind]][otherSeed].computeAcceleration(tr*cos(arg), tr*sin(arg));
                             mat[applicationVector[kind]][seed].computeAcceleration(-tr*cos(arg), -tr*sin(arg));
                         }
@@ -239,9 +239,9 @@ void Matrix::Tension(float fluidTension)
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 0.8;//Energy given to the others
-    float gravity = 1;//Force in g
-    float fluidTension = 0.5;//Percentage of follow up
+    float transmission = 0.5;//Energy given to the others
+    float gravity = 10;//Force in g
+    float fluidTension = 0;//Percentage of follow up
     float loss = 0;//Loss energy at each collision
     float wallLoss = 0;//Loss at each wall collision
     float timeLoss = 0;//Loss at each step
@@ -262,6 +262,7 @@ void Matrix::animate(int time, bool t)
         
         resetAcceleration();//No forces
     }
+    std::cout << this->mat[0][0].getSpeed() << ", " << this->mat[0][0].getSpdArg() << std::endl;
 
 }
 
