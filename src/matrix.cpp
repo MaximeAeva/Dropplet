@@ -62,7 +62,13 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl, int matterKindDive
         {   
             for(int col = 0; col < width; col++)
             {
-                if((raw==1) && (col>= 5) && col < 8) 
+                if((raw==1) && (col>= 7) && col < 9) 
+                {
+                    Matter p(0, 1, 0.5, raw+(rand() % 100 - 50)/100, col+(rand() % 100 -50)/100, 0, rand() % 10 - 5, 0, 0);
+                    v.push_back(p);
+                }
+
+                if(raw>height-3)
                 {
                     Matter p(0, 1, 0.5, raw+(rand() % 100 - 50)/100, col+(rand() % 100 -50)/100, 0, rand() % 10 - 5, 0, 0);
                     v.push_back(p);
@@ -240,10 +246,10 @@ void Matrix::Tension(float fluidTension)
 void Matrix::animate(int time, bool t)
 {
     float transmission = 0.5;//Energy given to the others
-    float gravity = 10;//Force in g
-    float fluidTension = 0;//Percentage of follow up
-    float loss = 0;//Loss energy at each collision
-    float wallLoss = 0;//Loss at each wall collision
+    float gravity = 1;//Force in g
+    float fluidTension = 0.5;//Percentage of follow up
+    float loss = 0.2;//Loss energy at each collision
+    float wallLoss = 0.5;//Loss at each wall collision
     float timeLoss = 0;//Loss at each step
     float timeStep = 0.01;
 
@@ -257,8 +263,9 @@ void Matrix::animate(int time, bool t)
 
         BoundaryConditions(wallLoss, timeStep);
         
-        updateSpeed(timeStep);//These forces applied during a delta time (small)
+        
         updatePosition(timeStep);//This speed applied during a small delta time
+        updateSpeed(timeStep);//These forces applied during a delta time (small)
         
         resetAcceleration();//No forces
     }
