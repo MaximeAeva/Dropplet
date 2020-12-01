@@ -239,10 +239,10 @@ void Matrix::Tension(float fluidTension)
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 0.6;//Energy given to the others
+    float transmission = 0.7;//Energy given to the others
     float gravity = 1;//Force in g
-    float fluidTension = 0.5;//Percentage of follow up
-    float loss = 0.1;//Loss energy at each collision
+    float fluidTension = 0.6;//Percentage of follow up
+    float loss = 0.05;//Loss energy at each collision
     float wallLoss = 0.5;//Loss at each wall collision
     float timeLoss = 0;//Loss at each step
     float timeStep = 0.01;
@@ -337,10 +337,10 @@ float Matrix::totalStrenght()
 void Matrix::genDrop()
 {
     int i = 0;
-    while(i < 9)
+    while(i < 18)
     {
         try {
-        Matter p(0, 1, 0.1, (i/3)+1, width/2-1+i%3, 0, 0, 0, 0);
+        Matter p(0, 1, 0.1, 0.3*(i/6), width/2-1+0.3*(i%6), 0, 0, 0, 0);
         this->mat[0].push_back(p);
         } catch (const std::bad_alloc& e) {
             std::cout << "Allocation failed: " << e.what() << std::endl;

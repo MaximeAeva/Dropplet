@@ -19,7 +19,7 @@ class Matrix{
         ~Matrix();
        std::vector<std::vector<Matter> > mat;
        void animate(int time, bool t);
-       inline int njMax(int dropPound, int wtrLvl, int drop8) {return dropPound*(drop8-wtrLvl);};
+       inline int njMax() {return this->mat[0][0].getMass()*this->mat[0].size()*this->height;};
        float totalStrenght();
        void genDrop();
 
