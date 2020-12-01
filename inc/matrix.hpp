@@ -21,6 +21,7 @@ class Matrix{
        void animate(int time, bool t);
        inline int njMax(int dropPound, int wtrLvl, int drop8) {return dropPound*(drop8-wtrLvl);};
        float totalStrenght();
+       void genDrop();
 
     private:
         void BoundaryConditions(float wallLoss, float timeStep);
