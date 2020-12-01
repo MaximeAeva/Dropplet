@@ -122,7 +122,12 @@ class Matter{
          * @brief Actual position (Result of speed)
          * 
          */
-        F position;  
+        F position;
+        /**
+         * @brief Energy is the key
+         * 
+         */
+        //float energy;
 };
 
 #endif

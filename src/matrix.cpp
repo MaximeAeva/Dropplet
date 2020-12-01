@@ -58,22 +58,16 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl, int matterKindDive
     for(int matKd = 0; matKd < matterKindDiversity; matKd++)
     {  
         std::vector<Matter> v;
-        for(int raw = 0; raw < height; raw++)
-        {   
-            for(int col = 0; col < width; col++)
-            {
-                if((raw==1) && (col>= 7) && col < 9) 
-                {
-                    Matter p(0, 1, 0.5, raw+(rand() % 100 - 50)/100, col+(rand() % 100 -50)/100, 0, rand() % 10 - 5, 0, 0);
-                    v.push_back(p);
-                }
-
-                if(raw>height-3)
-                {
-                    Matter p(0, 1, 0.5, raw+(rand() % 100 - 50)/100, col+(rand() % 100 -50)/100, 0, rand() % 10 - 5, 0, 0);
-                    v.push_back(p);
-                }
+        int i = 0;
+        while(i < 100)
+        {
+            try {
+            Matter p(0, 1, 0.1, rand() % (height-1) + (rand() % 100 + 50)/100, rand() % (width-1) + (rand() % 100 + 50)/100, 0, 0, 0, 0);
+            v.push_back(p);
+            } catch (const std::bad_alloc& e) {
+                std::cout << "Allocation failed: " << e.what() << std::endl;
             }
+            i++;
         }
         this->mat.push_back(v);
     }
@@ -107,7 +101,7 @@ void Matrix::BoundaryConditions(float wallLoss, float timeStep)
         for(int seed = 0; seed<mat[applicationVector[kind]].size(); seed++)//Through the matter
         {
             int k = applicationVector[kind];
-            if(mat[k][seed].getPos().x + mat[k][seed].getSize() >= this->height-mat[k][seed].getSize()/2)//floor
+            if(mat[k][seed].getPos().x + mat[k][seed].getSize() >= this->height-1)//floor
             {
                 if(mat[k][seed].getAcc().x > 0) mat[k][seed].computeAcceleration(-mat[k][seed].getAcc().x*mat[applicationVector[kind]][seed].getMass(), 0);
                 if(mat[k][seed].getSpd().x > 0) mat[k][seed].computeAcceleration((-coeff*mat[k][seed].getSpd().x)*mat[applicationVector[kind]][seed].getMass()/timeStep, 0);
@@ -122,7 +116,7 @@ void Matrix::BoundaryConditions(float wallLoss, float timeStep)
                 if(mat[k][seed].getAcc().y < 0) mat[k][seed].computeAcceleration(0, -mat[k][seed].getAcc().y*mat[applicationVector[kind]][seed].getMass());
                 if(mat[k][seed].getSpd().y < 0) mat[k][seed].computeAcceleration(0, (-coeff*mat[k][seed].getSpd().y)*mat[applicationVector[kind]][seed].getMass()/timeStep);
             }
-            else if(mat[k][seed].getPos().y + mat[k][seed].getSize() >= this->width-mat[k][seed].getSize()/2)//right wall
+            else if(mat[k][seed].getPos().y + mat[k][seed].getSize() >= this->width-1)//right wall
             {
                 if(mat[k][seed].getAcc().y > 0) mat[k][seed].computeAcceleration(0, -mat[k][seed].getAcc().y*mat[applicationVector[kind]][seed].getMass());
                 if(mat[k][seed].getSpd().y > 0) mat[k][seed].computeAcceleration(0, (-coeff*mat[k][seed].getSpd().y)*mat[applicationVector[kind]][seed].getMass()/timeStep);
@@ -269,7 +263,7 @@ void Matrix::animate(int time, bool t)
         
         resetAcceleration();//No forces
     }
-    std::cout << this->mat[0][0].getSpeed() << ", " << this->mat[0][0].getSpdArg() << std::endl;
+    std::cout << this->mat[0][0].getCoord().raw << ", " << this->mat[0][0].getCoord().col << std::endl;
 
 }
 
