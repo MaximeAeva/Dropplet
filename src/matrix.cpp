@@ -239,12 +239,12 @@ void Matrix::Tension(float fluidTension)
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 0.6;//Energy given to the others
+    float transmission = 0.5;//Energy given to the others
     float gravity = 1;//Force in g
     float fluidTension = 0.4;//Percentage of follow up
-    float loss = 0.2;//Loss energy at each collision
+    float loss = 0.4;//Loss energy at each collision
     float wallLoss = 0.8;//Loss at each wall collision
-    float timeLoss = 0.2;//Loss at each step
+    float timeLoss = 0.3;//Loss at each step
     float timeStep = 0.05;
 
     for(int i = 0; i<=time; i++)
@@ -263,7 +263,7 @@ void Matrix::animate(int time, bool t)
         
         resetAcceleration();//No forces
     }
-    std::cout << this->mat[0][0].getCoord().raw << ", " << this->mat[0][0].getCoord().col << std::endl;
+    //std::cout << this->mat[0][0].getCoord().raw << ", " << this->mat[0][0].getCoord().col << std::endl;
 
 }
 

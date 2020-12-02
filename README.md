@@ -3,7 +3,7 @@
 
 Pixel drop simulation of a waterdrop falling into water
 
-![Hey!](https://github.com/MaximeAeva/Dropplet/blob/master/res/hello.PNG)
+![Hey!](https://github.com/MaximeAeva/Dropplet/blob/master/res/hello.gif)
 
 ## Installation
 Windows:

@@ -27,7 +27,7 @@ int main()
     while(1)
     {
         d.show(m, njM, 100);//Refresh time can be limit
-        m.animate(10, t);
+        m.animate(5, t);
         if(GetAsyncKeyState(VK_DOWN))
         {
             m.genDrop();
