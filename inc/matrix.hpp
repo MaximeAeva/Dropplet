@@ -17,11 +17,11 @@ class Matrix{
     public:
         Matrix(int heigth, int width, Coord cd, int waterLvl = 20, int matterKindDiversity = 1);
         ~Matrix();
-       std::vector<std::vector<Matter> > mat;
-       void animate(int time, bool t);
-       inline int njMax() {return this->mat[0][0].getMass()*this->mat[0].size()*this->height;};
-       float totalStrenght();
-       void genDrop();
+        std::vector<std::vector<Matter> > mat;
+        void animate(int time, bool t);
+        int njMax();
+        float totalStrenght();
+        void genDrop();
 
     private:
         void BoundaryConditions(float wallLoss, float timeStep);
@@ -30,7 +30,7 @@ class Matrix{
         void Tension(float fluidTension);
         void Gravity(float force);
         void updatePosition(float timeStep);
-        void updateSpeed(float timeStep);
+        void updateSpeed(float timeStep, float timeLoss);
         void resetAcceleration();
         int applicationVector[1] = {0};
         int height;

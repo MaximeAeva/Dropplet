@@ -49,10 +49,10 @@ void Matter::computeAcceleration(float x, float y)
  * 
  * @param t 
  */
-void Matter::computeSpeed(float t)
+void Matter::computeSpeed(float t, float loss)
 {
-    this->speed.x += t*this->acceleration.x;
-    this->speed.y += t*this->acceleration.y;
+    this->speed.x += t*(1-loss)*this->acceleration.x;
+    this->speed.y += t*(1-loss)*this->acceleration.y;
 }
 
 /**

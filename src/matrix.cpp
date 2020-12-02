@@ -59,10 +59,10 @@ Matrix::Matrix(int height, int width, Coord cd, int waterLvl, int matterKindDive
     {  
         std::vector<Matter> v;
         int i = 0;
-        while(i < 200)
+        while(i < 500)
         {
             try {
-            Matter p(0, 1, 0.1, rand() % (height-1) + (rand() % 100 + 50)/100, rand() % (width-1) + (rand() % 100 + 50)/100, 0, 0, 0, 0);
+            Matter p(0, 1, 0.31, rand() % (height-1) + (rand() % 100 + 50)/100, rand() % (width-1) + (rand() % 100 + 50)/100, 0, 0, 0, 0);
             v.push_back(p);
             } catch (const std::bad_alloc& e) {
                 std::cout << "Allocation failed: " << e.what() << std::endl;
@@ -239,13 +239,13 @@ void Matrix::Tension(float fluidTension)
  */
 void Matrix::animate(int time, bool t)
 {
-    float transmission = 0.7;//Energy given to the others
+    float transmission = 0.6;//Energy given to the others
     float gravity = 1;//Force in g
-    float fluidTension = 0.6;//Percentage of follow up
-    float loss = 0.05;//Loss energy at each collision
-    float wallLoss = 0.5;//Loss at each wall collision
-    float timeLoss = 0;//Loss at each step
-    float timeStep = 0.01;
+    float fluidTension = 0.4;//Percentage of follow up
+    float loss = 0.2;//Loss energy at each collision
+    float wallLoss = 0.8;//Loss at each wall collision
+    float timeLoss = 0.2;//Loss at each step
+    float timeStep = 0.05;
 
     for(int i = 0; i<=time; i++)
     {
@@ -259,7 +259,7 @@ void Matrix::animate(int time, bool t)
         
         
         updatePosition(timeStep);//This speed applied during a small delta time
-        updateSpeed(timeStep);//These forces applied during a delta time (small)
+        updateSpeed(timeStep, timeLoss);//These forces applied during a delta time (small)
         
         resetAcceleration();//No forces
     }
@@ -273,13 +273,13 @@ void Matrix::animate(int time, bool t)
  * @param wallLoss Loss energy during a collision with a wall
  * @param timeLoss Vanishing energy over time
  */
-void Matrix::updateSpeed(float timeStep)
+void Matrix::updateSpeed(float timeStep, float timeLoss)
 {
     for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
     {
         for(int seed = 0; seed<mat[kind].size(); seed++)//Through the matter
         {
-            mat[kind][seed].computeSpeed(timeStep);
+            mat[kind][seed].computeSpeed(timeStep, timeLoss);
         }       
     }
 }
@@ -324,12 +324,11 @@ void Matrix::resetAcceleration()
 float Matrix::totalStrenght()
 {
     float k = 0;
-    for(int kind = 0; kind<mat.size(); kind++)//Through the authorised kind of matter
+    for(int i = 0; i<this->mat.size(); i++)
     {
-        for(int seed = 0; seed<mat[kind].size(); seed++)//Through the matter
-        {
-            k += mat[kind][seed].getSpeed();
-        }       
+        for(int j = 0; j<this->mat[i].size(); j++)
+            k += this->mat[i][j].getMass()*(this->height- this->mat[i][j].getPos().x) +
+                    0.5*this->mat[i][j].getMass()*pow(this->mat[i][j].getSpeed(), 2);
     }
     return k;
 }
@@ -340,7 +339,7 @@ void Matrix::genDrop()
     while(i < 18)
     {
         try {
-        Matter p(0, 1, 0.1, 0.3*(i/6), width/2-1+0.3*(i%6), 0, 0, 0, 0);
+        Matter p(0, 1, 0.31, 0.9*(i/6), width/2-1+0.9*(i%6), 0, 0, 0, 0);
         this->mat[0].push_back(p);
         } catch (const std::bad_alloc& e) {
             std::cout << "Allocation failed: " << e.what() << std::endl;
@@ -348,4 +347,16 @@ void Matrix::genDrop()
         i++;
         
     }
+}
+
+int Matrix::njMax()
+{
+    int nj = 0;
+    for(int i = 0; i<this->mat.size(); i++)
+    {
+        for(int j = 0; j<this->mat[i].size(); j++)
+            nj += this->mat[i][j].getMass()*(this->height- this->mat[i][j].getPos().x) +
+                    0.5*this->mat[i][j].getMass()*pow(this->mat[i][j].getSpeed(), 2);
+    }
+    return nj;
 }

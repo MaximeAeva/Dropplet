@@ -25,7 +25,7 @@ class Matter{
     public:
         Matter(int matterKind, float mass, float size, float xPos, float yPos, float xSpd, float ySpd, float xAcc, float yAcc);
         ~Matter();
-        void computeSpeed(float t);
+        void computeSpeed(float t, float loss = 0);
         void computePosition(float t);
         void computeAcceleration(float x, float y);
         inline void resetAcceleration(){this->acceleration = {0, 0};};
