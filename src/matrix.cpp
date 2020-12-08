@@ -41,6 +41,17 @@ int theSwitcher(int i, bool raw)
     else return scol;
 } 
 
+/**
+ * @brief Proximity law (tension is more about attraction than contact)
+ * 
+ * @param value factor of distance regarding particule ray
+ * @return float 
+ */
+float tensionFunction(float value)
+{
+    return 0.5*(0.5*tanh((16*value)-20));
+}
+
 //################## Creators #####################
 
 /**
@@ -162,7 +173,7 @@ void Matrix::Transmission(float transmission, float loss, float timeStep)
                 {
                     float distance = sqrt(pow(mat[applicationVector[kind]][seed].getPos().x - mat[applicationVector[kind]][otherSeed].getPos().x, 2) + 
                                         pow(mat[applicationVector[kind]][seed].getPos().y - mat[applicationVector[kind]][otherSeed].getPos().y, 2));
-                    if(distance <= (mat[applicationVector[kind]][seed].getSize()+mat[applicationVector[kind]][otherSeed].getSize()))//Close enough
+                    if(distance <= (mat[applicationVector[kind]][seed].getSize()+mat[applicationVector[kind]][otherSeed].getSize()))//HeavySide proximity function
                     {
                         float arg = atan2(mat[applicationVector[kind]][otherSeed].getPos().y - mat[applicationVector[kind]][seed].getPos().y, 
                         mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
@@ -212,17 +223,13 @@ void Matrix::Tension(float fluidTension)
                 {
                     float distance = sqrt(pow(mat[applicationVector[kind]][seed].getPos().x - mat[applicationVector[kind]][otherSeed].getPos().x, 2) + 
                                         pow(mat[applicationVector[kind]][seed].getPos().y - mat[applicationVector[kind]][otherSeed].getPos().y, 2));
-                    if(distance <= (mat[applicationVector[kind]][seed].getSize()+mat[applicationVector[kind]][otherSeed].getSize()))//Close enough
-                    {
-                        float arg = atan2(mat[applicationVector[kind]][otherSeed].getPos().y - mat[applicationVector[kind]][seed].getPos().y, 
-                        mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
-                        if(cos(mat[applicationVector[kind]][seed].getSpdArg()-arg)<0)//Well oriented
-                        {
-                            float tr = mat[applicationVector[kind]][seed].getSpeed()*cos(mat[applicationVector[kind]][seed].getSpdArg()-arg)*fluidTension;
-                            mat[applicationVector[kind]][otherSeed].computeAcceleration(tr*cos(arg), tr*sin(arg));
-                            mat[applicationVector[kind]][seed].computeAcceleration(-tr*cos(arg), -tr*sin(arg));
-                        }
-                    }
+                    float factor = tensionFunction((mat[applicationVector[kind]][seed].getSize()+mat[applicationVector[kind]][otherSeed].getSize())/
+                                            distance);                
+                    float arg = atan2(mat[applicationVector[kind]][otherSeed].getPos().y - mat[applicationVector[kind]][seed].getPos().y, 
+                    mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
+                    float tr = fluidTension*factor;
+                    mat[applicationVector[kind]][otherSeed].computeAcceleration(tr*cos(arg), tr*sin(arg));
+                    mat[applicationVector[kind]][seed].computeAcceleration(-tr*cos(arg), -tr*sin(arg));
                 }    
             }  
         }       
@@ -241,7 +248,7 @@ void Matrix::animate(int time, bool t)
 {
     float transmission = 0.5;//Energy given to the others
     float gravity = 1;//Force in g
-    float fluidTension = 0.4;//Percentage of follow up
+    float fluidTension = 0.001;//Percentage of attraction
     float loss = 0.4;//Loss energy at each collision
     float wallLoss = 0.8;//Loss at each wall collision
     float timeLoss = 0.3;//Loss at each step
@@ -360,3 +367,4 @@ int Matrix::njMax()
     }
     return nj;
 }
+
