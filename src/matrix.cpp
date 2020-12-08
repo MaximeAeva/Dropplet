@@ -49,7 +49,7 @@ int theSwitcher(int i, bool raw)
  */
 float tensionFunction(float value)
 {
-    return 0.5*(0.5*tanh((16*value)-20));
+    return 0.5*(0.5*tanh((16*value)-18));
 }
 
 //################## Creators #####################
