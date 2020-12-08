@@ -49,7 +49,7 @@ int theSwitcher(int i, bool raw)
  */
 float tensionFunction(float value)
 {
-    return 0.5*(0.5*tanh((16*value)-18));
+    return 0.5-(0.5*tanh((16*value)-18));
 }
 
 //################## Creators #####################
@@ -227,9 +227,9 @@ void Matrix::Tension(float fluidTension)
                                             distance);                
                     float arg = atan2(mat[applicationVector[kind]][otherSeed].getPos().y - mat[applicationVector[kind]][seed].getPos().y, 
                     mat[applicationVector[kind]][otherSeed].getPos().x - mat[applicationVector[kind]][seed].getPos().x);
-                    float tr = fluidTension*factor;
-                    mat[applicationVector[kind]][otherSeed].computeAcceleration(tr*cos(arg), tr*sin(arg));
-                    mat[applicationVector[kind]][seed].computeAcceleration(-tr*cos(arg), -tr*sin(arg));
+                    float tr = fluidTension*factor*mat[applicationVector[kind]][otherSeed].getSpeed();
+                    mat[applicationVector[kind]][otherSeed].computeAcceleration(-tr*cos(arg), -tr*sin(arg));
+                    mat[applicationVector[kind]][seed].computeAcceleration(tr*cos(arg), tr*sin(arg));
                 }    
             }  
         }       
@@ -248,7 +248,7 @@ void Matrix::animate(int time, bool t)
 {
     float transmission = 0.5;//Energy given to the others
     float gravity = 1;//Force in g
-    float fluidTension = 0.001;//Percentage of attraction
+    float fluidTension = 0.0001;//Percentage of attraction
     float loss = 0.4;//Loss energy at each collision
     float wallLoss = 0.8;//Loss at each wall collision
     float timeLoss = 0.3;//Loss at each step
